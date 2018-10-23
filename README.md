@@ -2,7 +2,7 @@ This is the source code and binaries distribution of the Masking Distance Tool,
 
 you need to set the environment variable 'FAULTY' with:
 
-export FAULTY = <path to jar files>
+export FAULTY = path to jar files
 
 HOW TO COMPILE:
 
