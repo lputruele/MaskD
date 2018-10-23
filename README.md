@@ -10,7 +10,7 @@ ant compile jar
 
 HOW TO RUN IT:
 
-Usage: ./faulty-mask <options> <nominal model path> <faulty model path>
+Usage: ./faulty-mask [options] [nominal model path] [faulty model path]
 
 Output: lim n->infinity of 1/1+n, where n is the number of faults masked
 
