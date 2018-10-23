@@ -1,0 +1,19 @@
+digraph model {
+
+    p2nc_ -> p2nc_p2d_ [color="red",label = "p2.Down"];
+    p2nc_ -> p2w_ [label = "p2.Waiting"];
+    p2w_ -> p2w_p2d_ [color="red",label = "p2.Down"];
+    p2w_ -> p2c_ [label = "p2.EnterCS"];
+    p2nc_p2d_ [color="red"];
+    p2nc_p2d_ -> p2nc_ [label = "p2.Recover"];
+    p2nc_p2d_ -> p2nc_p2d_ [color="red",label = "p2.Down"];
+    p2c_ -> p2c_p2d_ [color="red",label = "p2.Down"];
+    p2c_ -> p2nc_ [label = "p2.ExitCS"];
+    p2w_p2d_ [color="red"];
+    p2w_p2d_ -> p2w_ [label = "p2.Recover"];
+    p2w_p2d_ -> p2w_p2d_ [color="red",label = "p2.Down"];
+    p2c_p2d_ [color="red"];
+    p2c_p2d_ -> p2c_ [label = "p2.Recover"];
+    p2c_p2d_ -> p2c_p2d_ [color="red",label = "p2.Down"];
+
+}

@@ -1,0 +1,7 @@
+digraph model {
+
+    STATEt1s0_ -> STATEt1s1_ [label = "t1tau0"];
+    STATEt1s1_ -> STATEt1s2_ [label = "t1a"];
+    STATEt1s2_ -> STATEt1s0_ [label = "t1tau1"];
+
+}

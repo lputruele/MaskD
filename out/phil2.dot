@@ -1,0 +1,21 @@
+digraph model {
+
+    STATE -> STATEphil2s0_phil2s1_ [color="red",label = "phil2error"];
+    STATE -> STATE [label = "phil2thinking"];
+    STATE -> STATEphil2s1_ [label = "phil2hungry"];
+    STATEphil2s1_ -> STATEphil2s0_phil2s1_ [color="red",label = "phil2error"];
+    STATEphil2s1_ -> STATEphil2s1_phil2hasR_ [label = "phil2getRight"];
+    STATEphil2s0_phil2s1_ [color="red"];
+    STATEphil2s0_phil2s1_ -> STATEphil2s0_phil2s1_ [color="red",label = "phil2error"];
+    STATEphil2s1_phil2hasR_ -> STATEphil2s0_phil2s1_phil2hasR_ [color="red",label = "phil2error"];
+    STATEphil2s1_phil2hasR_ -> STATEphil2s1_phil2hasL_phil2hasR_ [label = "phil2getLeft"];
+    STATEphil2s1_phil2hasL_phil2hasR_ -> STATEphil2s0_phil2s1_phil2hasL_phil2hasR_ [color="red",label = "phil2error"];
+    STATEphil2s1_phil2hasL_phil2hasR_ -> STATEphil2s0_phil2hasL_phil2hasR_ [label = "phil2eating"];
+    STATEphil2s0_phil2s1_phil2hasR_ [color="red"];
+    STATEphil2s0_phil2s1_phil2hasR_ -> STATEphil2s0_phil2s1_phil2hasR_ [color="red",label = "phil2error"];
+    STATEphil2s0_phil2hasL_phil2hasR_ -> STATEphil2s0_phil2s1_phil2hasL_phil2hasR_ [color="red",label = "phil2error"];
+    STATEphil2s0_phil2hasL_phil2hasR_ -> STATE [label = "phil2thinking"];
+    STATEphil2s0_phil2s1_phil2hasL_phil2hasR_ [color="red"];
+    STATEphil2s0_phil2s1_phil2hasL_phil2hasR_ -> STATEphil2s0_phil2s1_phil2hasL_phil2hasR_ [color="red",label = "phil2error"];
+
+}
