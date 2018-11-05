@@ -11,13 +11,15 @@ ant compile jar
 HOW TO RUN IT:
 
 Usage: ./maskD [options] [model path] 
+
 Output: lim n->infinity of 1/1+n, where n is the number of faults masked
+
 Options: 
- -d : create dot file 
- -t : print error trace 
- -s : start simulation 
- -l : treat deadlock as error state too
-. 
+-d : create dot file 
+-t : print error trace 
+-s : start simulation 
+-l : treat deadlock as error state too
+ 
 
 Some examples can be found
 in the folder: tests/
