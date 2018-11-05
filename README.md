@@ -1,8 +1,8 @@
 This is the source code and binaries distribution of the Masking Distance Tool,
 
-you need to set the environment variable 'FAULTY' with:
+you need to set the environment variable 'MASKD' with:
 
-export FAULTY = <path to jar files>
+export MASKD = [path to jar files]
 
 HOW TO COMPILE:
 
@@ -10,7 +10,7 @@ ant compile jar
 
 HOW TO RUN IT:
 
-Usage: ./faulty-mask <options> <nominal model path> <faulty model path>
+Usage: ./maskD [options] [model path] 
 Output: lim n->infinity of 1/1+n, where n is the number of faults masked
 Options: 
  -d : create dot file 

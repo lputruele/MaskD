@@ -17,16 +17,18 @@ public class MaskingDistance{
 		return g;
 	}
 
-	public void buildGraph(AuxiliarProgram specProgram, AuxiliarProgram impProgram, boolean deadlockIsError){
+	public void buildGraph(AuxiliarProgram specProgram, boolean deadlockIsError){
 		//This method builds a game graph for the Masking Distance Game, there are two players: the Refuter(R) and the Verifier(V)
 		//The refuter plays with the implementation(imp), this means choosing any action available (faulty or not)
 		//and the verifier plays with the specification(spec), he tries to match the action played by the refuter, if he can't then an error state is reached.
 		ExplicitCompositeModel spec,imp;
+		System.out.println("Building Graph...");
 		spec = specProgram.toGraph();
-		imp = impProgram.toGraph();
-		imp.saturate();
+		imp = spec;
+		//imp.saturate();
+		System.out.println("Saturating Graph...");
 		spec.saturate();
-
+		imp.createDot();
 		g = new GameGraph();
 
         //calculate initial state
@@ -48,7 +50,10 @@ public class MaskingDistance{
             		Pair p = new Pair(curr.getImpState(),succ);
             		if (imp.getLabels().get(p) != null){
             			for (int i=0; i < imp.getLabels().get(p).size(); i++){
-            				GameNode curr_ = new GameNode(curr.getSpecState(),succ,imp.getLabels().get(p).get(i), "V");
+            				String lbl = imp.getLabels().get(p).get(i);
+            				if (imp.getTauActions().get(p) != null && imp.getTauActions().get(p).get(i))
+            					lbl = "$";
+            				GameNode curr_ = new GameNode(curr.getSpecState(),succ,lbl, "V");
 		            		GameNode toOld = g.search(curr_);
 		            		boolean f = imp.getFaultyActions().get(p).get(i);
 		                    if (toOld == null){
@@ -88,16 +93,19 @@ public class MaskingDistance{
 		            	Pair p = new Pair(curr.getSpecState(),succ);
 		            	if (spec.getLabels().get(p) != null){
 	            			for (int i=0; i < spec.getLabels().get(p).size(); i++){
+	            				String lbl = spec.getLabels().get(p).get(i);
+	            				if (spec.getTauActions().get(p) != null && spec.getTauActions().get(p).get(i))
+	            					lbl = "$";
 	            				if (curr.getSymbol().equals(spec.getLabels().get(p).get(i))){
 				            		GameNode curr_ = new GameNode(succ,curr.getImpState(),"", "R");
 				            		GameNode toOld = g.search(curr_);
 				                    if (toOld == null){
 					            		g.addNode(curr_);
-					            		g.addEdge(curr,curr_,spec.getLabels().get(p).get(i), spec.getFaultyActions().get(p).get(i)); //add label may not be necessary
+					            		g.addEdge(curr,curr_,lbl, spec.getFaultyActions().get(p).get(i)); //add label may not be necessary
 					            		iterSet.add(curr_);
 					            	}
 					            	else{
-					            		g.addEdge(curr,toOld,spec.getLabels().get(p).get(i), spec.getFaultyActions().get(p).get(i));
+					            		g.addEdge(curr,toOld,lbl, spec.getFaultyActions().get(p).get(i));
 					            	}
 					            	foundSucc = true;
 					            	break;
@@ -192,10 +200,10 @@ public class MaskingDistance{
         //System.out.println(g.createDot());
 	}*/
 
-    public double calculateDistance(AuxiliarProgram specProgram, AuxiliarProgram impProgram, boolean deadlockIsError){
+    public double calculateDistance(AuxiliarProgram specProgram, boolean deadlockIsError){
 		// We use dijsktra's algorithm to find the shortest path to an error state
 		// This is the main method of this class
-    	buildGraph(specProgram,impProgram,deadlockIsError);
+    	buildGraph(specProgram,deadlockIsError);
 
         for(GameNode n : g.getNodes()){
         	n.setDistanceValue(Integer.MAX_VALUE);
