@@ -17,18 +17,18 @@ public class MaskingDistance{
 		return g;
 	}
 
-	public void buildGraph(AuxiliarProgram specProgram, boolean deadlockIsError){
+	public void buildGraph(AuxiliarProgram specProgram, AuxiliarProgram impProgram, boolean deadlockIsError){
 		//This method builds a game graph for the Masking Distance Game, there are two players: the Refuter(R) and the Verifier(V)
 		//The refuter plays with the implementation(imp), this means choosing any action available (faulty or not)
 		//and the verifier plays with the specification(spec), he tries to match the action played by the refuter, if he can't then an error state is reached.
 		ExplicitCompositeModel spec,imp;
 		System.out.println("Building Graph...");
 		spec = specProgram.toGraph();
-		imp = spec;
-		//imp.saturate();
+		imp = impProgram.toGraph();
 		System.out.println("Saturating Graph...");
 		spec.saturate();
-		imp.createDot();
+		imp.saturate();
+		//imp.createDot();
 		g = new GameGraph();
 
         //calculate initial state
@@ -200,10 +200,11 @@ public class MaskingDistance{
         //System.out.println(g.createDot());
 	}*/
 
-    public double calculateDistance(AuxiliarProgram specProgram, boolean deadlockIsError){
+    public double calculateDistance(AuxiliarProgram specProgram, AuxiliarProgram impProgram, boolean deadlockIsError){
 		// We use dijsktra's algorithm to find the shortest path to an error state
 		// This is the main method of this class
-    	buildGraph(specProgram,deadlockIsError);
+    	buildGraph(specProgram, impProgram, deadlockIsError);
+    	System.out.println("State space: "+g.getNodes().size());
 
         for(GameNode n : g.getNodes()){
         	n.setDistanceValue(Integer.MAX_VALUE);

@@ -20,8 +20,8 @@ public class MainMD {
        boolean startSimulation = false;
        boolean deadlockIsError = false;
        
-       if (args.length < 1){
-            System.out.println("Usage: ./faulty-mask <options> <model path>");
+       if (args.length < 2){
+            System.out.println("Usage: ./faulty-mask <options> <nominal model path> <faulty model path>");
             System.out.println("Output: lim n->infinity of 1/1+n, where n is the number of faults masked");
             System.out.println("Options: \n -d : create dot file \n -t : print error trace \n -s : start simulation \n -l : treat deadlock as error state too");
        }
@@ -40,9 +40,10 @@ public class MainMD {
                 deadlockIsError = true;
               }
            }
-            AuxiliarProgram spec = prog.parseAux(args[args.length - 1]);
+            AuxiliarProgram spec = prog.parseAux(args[args.length - 2]);
+            AuxiliarProgram imp = prog.parseAux(args[args.length - 1]);
             MaskingDistance md = new MaskingDistance();
-            System.out.println("Masking Distance: "+md.calculateDistance(spec,deadlockIsError));
+            System.out.println("Masking Distance: "+md.calculateDistance(spec,imp,deadlockIsError));
             if (printTrace)
               md.printTraceToError();
             if (startSimulation)

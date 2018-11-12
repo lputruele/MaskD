@@ -1,18 +1,32 @@
-Process General{
+Global g1g2,g1g3,g1g4: BOOL;
+Global g2g3,g2g4: BOOL;
+Global g3g1,g3g4: BOOL;
+Global g4g2,g4g3: BOOL;
+
+
+Process Commander{
 	s0,s1: BOOL;
 	Initial: s0;
 	Normative: true;
-		[send] s0 -> s0 = false, s1 = true;
+		[sendAttack2All] s0 -> g1g2 = true, g1g3 = true, g1g4 = true;
+
 }
 
-Process Lieutenant{
+Process Lieutenant1{
 	s0,s1: BOOL;
 	Initial: s0;
 	Normative: true;
-		[forward] s0 -> s0 = false, s1 = true;
+		[forward] true -> g2g3 = g1g2, g2g4 = g1g2;
+
 }
 
 Main(){
-    g1:General;
+    g1:Commander;
+    g2:Lieutenant;
+    g3:Lieutenant;
+    g4:Lieutenant;
     run g1();
+    run g2();
+    run g3();
+    run g4();
 }
