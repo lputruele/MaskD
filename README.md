@@ -12,7 +12,7 @@ HOW TO RUN IT:
 
 Usage: ./maskD [options] [nominal model path] [faulty model path]
 
-Output: lim n->infinity of 1/1+n, where n is the number of faults masked
+Output: lim n->infinity of 1/(1+sumMaskedFaults[0..n]), where n is the number of steps and sumMaskedFaults[inf..sup] is the amount of faults masked from inf to sup
 
 Options: 
 -d : create dot file 
