@@ -1,22 +1,45 @@
-Global g1g2,g1g3,g1g4: BOOL;
-Global g2g3,g2g4: BOOL;
-Global g3g1,g3g4: BOOL;
-Global g4g2,g4g3: BOOL;
+Global g1g2A,g1g3A,g1g4A: BOOL; //Commander(g1) attack messages
+Global g2g3A,g2g4A: BOOL; //Lieutenant1(g2) attack messages
+Global g3g2A,g3g4A: BOOL; //Lieutenant2(g3) attack messages
+Global g4g2A,g4g3A: BOOL; //Lieutenant3(g4) attack messages
 
+Global g1g2R,g1g3R,g1g4R: BOOL; //Commander(g1) retreat messages
+Global g2g3R,g2g4R: BOOL; //Lieutenant1(g2) retreat messages
+Global g3g2R,g3g4R: BOOL; //Lieutenant2(g3) retreat messages
+Global g4g2R,g4g3R: BOOL; //Lieutenant3(g4) retreat messages
+
+// s0 && !g1g2A && !g1g3A && !g1g4A && !g1g2R && !g1g3R && !g1g4R && !g2g3A && !g2g4A && !g2g3R && !g2g4R && !g3g2A && !g3g4A && !g3g2R && !g3g4R && !g4g3A && !g4g2A && !g4g3R && !g4g2R
 
 Process Commander{
 	s0,s1: BOOL;
-	Initial: s0;
+	Initial: s0 && !s1;
 	Normative: true;
-		[sendAttack2All] s0 -> g1g2 = true, g1g3 = true, g1g4 = true;
+		[sA] s0 -> g1g2A = true, g1g3A = true, g1g4A = true, s0= false, s1=true;
+		[sR] s0 -> g1g2R = true, g1g3R = true, g1g4R = true, s0= false, s1=true;
+}
+
+Process Lieutenant(attack: BOOL, retreat: BOOL, fw1A: BOOL, fw2A:BOOL, fw1R:BOOL, fw2R:BOOL){
+	s0,s1, isBetrayer: BOOL;
+	Initial: s0 && !s1 && !isBetrayer;
+	Normative: true;
+		[fA] s0 && attack && !isBetrayer -> fw1A = true, fw2A= true, s0 = false, s1 = true;
+		[fR] s0 && retreat && !isBetrayer -> fw1R = true, fw2R = true, s0 = false, s1 = true;
+		[fA] s0 && attack && isBetrayer -> fw1R = true, fw2R= true, s0 = false, s1 = true;
+		[fR] s0 && retreat && isBetrayer -> fw1A = true, fw2A= true, s0 = false, s1 = true;
+		[Betray] faulty s0 -> isBetrayer = true; 
 
 }
 
-Process Lieutenant1{
+Process Decision{
 	s0,s1: BOOL;
-	Initial: s0;
+	Initial: s0 && !s1;
 	Normative: true;
-		[forward] true -> g2g3 = g1g2, g2g4 = g1g2;
+		[ConsensusAttack] s0 && ((g1g2A && g3g2A) || (g1g2A && g4g2A) || (g4g2A && g3g2A)) && ((g1g3A && g2g3A) || (g1g3A && g4g3A) || (g4g3A && g2g3A))  -> s0 = false, s1 = true;
+		[ConsensusAttack] s0 && ((g1g2A && g3g2A) || (g1g2A && g4g2A) || (g4g2A && g3g2A)) && ((g1g4A && g3g4A) || (g1g4A && g2g4A) || (g3g4A && g2g4A)) -> s0 = false, s1 = true;
+		[ConsensusAttack] s0 && ((g1g3A && g2g3A) || (g1g3A && g4g3A) || (g4g3A && g2g3A)) && ((g1g4A && g3g4A) || (g1g4A && g2g4A) || (g3g4A && g2g4A)) -> s0 = false, s1 = true;
+		[ConsensusRetreat] s0 && ((g1g2R && g3g2R) || (g1g2R && g4g2R) || (g4g2R && g3g2R)) && ((g1g3R && g2g3R) || (g1g3R && g4g3R) || (g4g3R && g2g3R))  -> s0 = false, s1 = true;
+		[ConsensusRetreat] s0 && ((g1g2R && g3g2R) || (g1g2R && g4g2R) || (g4g2R && g3g2R)) && ((g1g4R && g3g4R) || (g1g4R && g2g4R) || (g3g4R && g2g4R)) -> s0 = false, s1 = true;
+		[ConsensusRetreat] s0 && ((g1g3R && g2g3R) || (g1g3R && g4g3R) || (g4g3R && g2g3R)) && ((g1g4R && g3g4R) || (g1g4R && g2g4R) || (g3g4R && g2g4R)) -> s0 = false, s1 = true;
 
 }
 
@@ -25,8 +48,10 @@ Main(){
     g2:Lieutenant;
     g3:Lieutenant;
     g4:Lieutenant;
+    d:Decision;
     run g1();
-    run g2();
-    run g3();
-    run g4();
+    run g2(g1g2A,g1g2R,g2g3A,g2g4A,g2g3R,g2g4R);
+    run g3(g1g3A,g1g3R,g3g2A,g3g4A,g3g2R,g3g4R);
+    run g4(g1g4A,g1g4R,g4g3A,g4g2A,g4g3R,g4g2R);
+    run d();
 }
