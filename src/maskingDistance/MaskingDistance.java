@@ -22,10 +22,10 @@ public class MaskingDistance{
 		//The refuter plays with the implementation(imp), this means choosing any action available (faulty or not)
 		//and the verifier plays with the specification(spec), he tries to match the action played by the refuter, if he can't then an error state is reached.
 		ExplicitCompositeModel spec,imp;
-		System.out.println("Building Graph...");
+		System.out.println("Building Graphs...");
 		spec = specProgram.toGraph();
 		imp = impProgram.toGraph();
-		System.out.println("Saturating Graph...");
+		System.out.println("Saturating Graphs...");
 		spec.saturate();
 		imp.saturate();
 		//imp.createDot();
@@ -43,7 +43,7 @@ public class MaskingDistance{
         while(!iterSet.isEmpty()){
             GameNode curr = iterSet.pollFirst();
             if (deadlockIsError && imp.getSuccessors(curr.getImpState()).isEmpty()){ // this is a special deadlock case
-            		g.addEdge(curr,g.getErrState(),"ERR", false);
+            		g.addEdge(curr,g.getErrState(),"ERR", false, false);
             }
             if (curr.getPlayer() == "R"){ //if player is refuter we add its possible moves from current state
             	for (CompositeNode succ : imp.getSuccessors(curr.getImpState())){
@@ -56,15 +56,16 @@ public class MaskingDistance{
             				GameNode curr_ = new GameNode(curr.getSpecState(),succ,lbl, "V");
 		            		GameNode toOld = g.search(curr_);
 		            		boolean f = imp.getFaultyActions().get(p).get(i);
+		            		boolean isTau = imp.getTauActions().get(p).get(i);
 		                    if (toOld == null){
 			            		g.addNode(curr_);
 			            		if (f)
 			            			curr_.setMask(true);
-			            		g.addEdge(curr,curr_,curr_.getSymbol(), f); 
+			            		g.addEdge(curr,curr_,curr_.getSymbol(), f, isTau); 
 			            		iterSet.add(curr_);
 			            	}
 			            	else{
-			            		g.addEdge(curr,toOld,toOld.getSymbol(), f);
+			            		g.addEdge(curr,toOld,toOld.getSymbol(), f, isTau);
 			            	}
             			}
             		}
@@ -80,11 +81,11 @@ public class MaskingDistance{
             		GameNode toOld = g.search(curr_);
                     if (toOld == null){
 	            		g.addNode(curr_);
-	            		g.addEdge(curr,curr_,"M"+curr.getSymbol(), false); //add label may not be necessary
+	            		g.addEdge(curr,curr_,"M"+curr.getSymbol(), false, false); //add label may not be necessary
 	            		iterSet.add(curr_);
 	            	}
 	            	else{
-	            		g.addEdge(curr,toOld,"M"+curr.getSymbol(), false);
+	            		g.addEdge(curr,toOld,"M"+curr.getSymbol(), false, false);
 	            	}
 	            }
 	            else{
@@ -99,13 +100,15 @@ public class MaskingDistance{
 	            				if (curr.getSymbol().equals(spec.getLabels().get(p).get(i))){
 				            		GameNode curr_ = new GameNode(succ,curr.getImpState(),"", "R");
 				            		GameNode toOld = g.search(curr_);
+				            		boolean f = spec.getFaultyActions().get(p).get(i);
+		            				boolean isTau = spec.getTauActions().get(p).get(i);
 				                    if (toOld == null){
 					            		g.addNode(curr_);
-					            		g.addEdge(curr,curr_,lbl, spec.getFaultyActions().get(p).get(i)); //add label may not be necessary
+					            		g.addEdge(curr,curr_,lbl, f, isTau); //add label may not be necessary
 					            		iterSet.add(curr_);
 					            	}
 					            	else{
-					            		g.addEdge(curr,toOld,lbl, spec.getFaultyActions().get(p).get(i));
+					            		g.addEdge(curr,toOld,lbl, f, isTau);
 					            	}
 					            	foundSucc = true;
 					            	break;
@@ -114,7 +117,7 @@ public class MaskingDistance{
 		            	}
 	            	}
 	            	if (!foundSucc){
-	        			g.addEdge(curr,g.getErrState(),"ERR", false);
+	        			g.addEdge(curr,g.getErrState(),"ERR", false, false);
 	            	}
 	            }
             }
@@ -204,7 +207,8 @@ public class MaskingDistance{
 		// We use dijsktra's algorithm to find the shortest path to an error state
 		// This is the main method of this class
     	buildGraph(specProgram, impProgram, deadlockIsError);
-    	System.out.println("State space: "+g.getNodes().size());
+    	//System.out.println("State space: "+g.getNumNodes());
+    	//System.out.println("Number of edges: "+g.getNumEdges());
 
         for(GameNode n : g.getNodes()){
         	n.setDistanceValue(Integer.MAX_VALUE);
