@@ -3,7 +3,6 @@ package mc;
 import java_cup.runtime.*;
 import java.io.*;
 import java.util.LinkedList;
-import faulty.*;
 import faulty.auxiliar.*;
 import parserProgram.*;
 
