@@ -8,7 +8,6 @@ package parserProgram;
 
 import java_cup.runtime.*;
 import net.sf.javabdd.*;
-import faulty.*;
 import faulty.auxiliar.*;
 import java.util.*;
 
