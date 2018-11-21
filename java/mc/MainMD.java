@@ -2,7 +2,6 @@ package mc;
 
 import java.io.*;
 
-import faulty.*;
 import faulty.auxiliar.*;
 import maskingDistance.*;
 
@@ -22,7 +21,7 @@ public class MainMD {
        
        if (args.length < 2){
             System.out.println("Usage: ./faulty-mask <options> <nominal model path> <faulty model path>");
-            System.out.println("Output: lim n->infinity of 1/1+n, where n is the number of faults masked");
+            System.out.println("Output: lim n->infinity of 1/(1+sumMaskedFaults[0..n]), where n is the number of steps and sumMaskedFaults[inf..sup] is the amount of faults masked from inf to sup");
             System.out.println("Options: \n -d : create dot file \n -t : print error trace \n -s : start simulation \n -l : treat deadlock as error state too");
        }
        else{

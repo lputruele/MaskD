@@ -23,6 +23,11 @@ Options:
 Some examples can be found
 in the folder: tests/
 
+More especifically, on tests/nominal/ are the nominal models, and on tests/faulty/ are them faulty counterparts.
+
+For the case of phils, run with option -l, for example: ./maskD -l ../tests/nominal/phils/phils3.test ../tests/faulty/phils/phils3.test
+
+
 This is the first version of the tool, we expect to add further features and examples
 soon.
 
