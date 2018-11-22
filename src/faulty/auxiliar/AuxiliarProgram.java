@@ -386,7 +386,6 @@ public class AuxiliarProgram extends AuxiliarProgramNode{
         }
         //System.out.println("hey");
         //ExplicitModel res = m.flatten();
-        m.createDot();
         return m;
     }
 

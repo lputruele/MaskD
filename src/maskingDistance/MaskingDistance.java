@@ -28,7 +28,8 @@ public class MaskingDistance{
 		System.out.println("Saturating Graphs...");
 		spec.saturate();
 		imp.saturate();
-		//imp.createDot();
+		//spec.createDot(false);
+		//imp.createDot(true);
 		g = new GameGraph();
 
         //calculate initial state

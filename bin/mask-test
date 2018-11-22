@@ -1,22 +1,62 @@
-# A simple script for running the faulty model checker
-echo "----------------------------Memory test----------------------------"
+#script for replicating experimental evaluation results
+echo "----------------------------Memory Cell test----------------------------"
 echo "3 bits"
-time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/memoryCell/memoryCell3nominal.test ../tests/maskingDistance/memoryCell/memoryCell3.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/memoryCell/memoryCell3.test ../tests/faulty/memoryCell/memoryCell3.test
 echo "5 bits"
-time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/memoryCell/memoryCell5nominal.test ../tests/maskingDistance/memoryCell/memoryCell5.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/memoryCell/memoryCell5.test ../tests/faulty/memoryCell/memoryCell5.test
 echo "7 bits"
-time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/memoryCell/memoryCell7nominal.test ../tests/maskingDistance/memoryCell/memoryCell7.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/memoryCell/memoryCell7.test ../tests/faulty/memoryCell/memoryCell7.test
+echo "9 bits"
+time java -jar $MASKD/maskD.jar ../tests/nominal/memoryCell/memoryCell9.test ../tests/faulty/memoryCell/memoryCell9.test
+
+echo "----------------------------N-Modular Redundancy test----------------------------"
+echo "3 modules "
+time java -jar $MASKD/maskD.jar ../tests/nominal/nmr/nmr3.test ../tests/faulty/nmr/nmr3.test
+echo "5 modules"
+time java -jar $MASKD/maskD.jar ../tests/nominal/nmr/nmr5.test ../tests/faulty/nmr/nmr5.test
+echo "7 modules"
+time java -jar $MASKD/maskD.jar ../tests/nominal/nmr/nmr7.test ../tests/faulty/nmr/nmr7.test
+echo "9 modules"
+time java -jar $MASKD/maskD.jar ../tests/nominal/nmr/nmr9.test ../tests/faulty/nmr/nmr9.test
 
 echo "----------------------------Philosophers test (odd/even model)----------------------------"
 echo "2 phils"
-time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/phils/phils2nominal.test ../tests/maskingDistance/phils/phils2.test
+time java -jar $MASKD/maskD.jar -l ../tests/nominal/phils/phils2.test ../tests/faulty/phils/phils2.test
 echo "3 phils"
-time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/phils/phils3nominal.test ../tests/maskingDistance/phils/phils3.test
+time java -jar $MASKD/maskD.jar -l ../tests/nominal/phils/phils3.test ../tests/faulty/phils/phils3.test
 echo "4 phils"
-time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/phils/phils4nominal.test ../tests/maskingDistance/phils/phils4.test
+time java -jar $MASKD/maskD.jar -l ../tests/nominal/phils/phils4.test ../tests/faulty/phils/phils4.test
+echo "5 phils"
+time java -jar $MASKD/maskD.jar -l ../tests/nominal/phils/phils5.test ../tests/faulty/phils/phils5.test
 
-#echo "Triangular inequality memory 3bits and 5bits should be 3 - 2 = 1 --> 1/2"
-#time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/memoryCell/ti_memoryCell5normal.test ../tests/maskingDistance/memoryCell/ti_memoryCell5.test
+echo "----------------------------Byzantine Generals test----------------------------"
+echo "3 generals "
+time java -jar $MASKD/maskD.jar ../tests/nominal/byzantine/byz3.test ../tests/faulty/byzantine/byz3.test 
+echo "4 generals"
+time java -jar $MASKD/maskD.jar ../tests/nominal/byzantine/byz4.test ../tests/faulty/byzantine/byz4.test
 
-#echo "Triangular inequality memory 3bits and 7bits should be 4 - 2 = 2 --> 1/3"
-#time java -Xss5m -jar $FAULTY/dCTL_checker.jar -m ../tests/maskingDistance/memoryCell/ti_memoryCell7normal.test ../tests/maskingDistance/memoryCell/ti_memoryCell7.test
+echo "----------------------------Bounded Retransmission Protocol test----------------------------"
+echo "1 chunk(s), 1 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M1.test ../tests/faulty/brp/brpN1M1.test
+echo "1 chunk(s), 3 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M3.test ../tests/faulty/brp/brpN1M3.test
+echo "1 chunk(s), 5 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M5.test ../tests/faulty/brp/brpN1M5.test
+echo "1 chunk(s), 7 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M7.test ../tests/faulty/brp/brpN1M7.test
+echo "3 chunk(s), 1 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M1.test ../tests/faulty/brp/brpN3M1.test
+echo "3 chunk(s), 3 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M3.test ../tests/faulty/brp/brpN3M3.test
+echo "3 chunk(s), 5 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M5.test ../tests/faulty/brp/brpN3M5.test
+echo "3 chunk(s), 7 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M7.test ../tests/faulty/brp/brpN3M7.test
+echo "5 chunk(s), 1 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M1.test ../tests/faulty/brp/brpN5M1.test
+echo "5 chunk(s), 3 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M3.test ../tests/faulty/brp/brpN5M3.test
+echo "5 chunk(s), 5 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M5.test ../tests/faulty/brp/brpN5M5.test
+echo "5 chunk(s), 7 retransmission(s)"
+time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M7.test ../tests/faulty/brp/brpN5M7.test

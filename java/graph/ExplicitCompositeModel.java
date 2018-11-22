@@ -158,7 +158,7 @@ public class ExplicitCompositeModel {
 		return preList.get(v);
 	}
 
-	public String createDot(){
+	public String createDot(boolean isImp){
 		String res = "digraph model {\n\n";
 		for (CompositeNode v : nodes){
 			if (v.getIsFaulty())
@@ -178,7 +178,12 @@ public class ExplicitCompositeModel {
 		}
 		res += "\n}";
 		try{
-            File file = new File("../out/" + "FullModel" +".dot");
+			String path = "";
+			if (isImp)
+            	path ="../out/" + "ImpModel" +".dot";
+            else
+            	path ="../out/" + "SpecModel" +".dot";
+            File file = new File(path);
             file.createNewFile();
             FileWriter fw = new FileWriter(file);
             BufferedWriter bw = new BufferedWriter(fw);
