@@ -365,6 +365,8 @@ public class AuxiliarProgram extends AuxiliarProgramNode{
             //System.out.println(curr);
             for (int i = 0; i < m.getProcDecls().size(); i++){ // for each process in current global state
                 for (AuxiliarBranch b : m.getProcs().get(i).getBranches()){
+                    if (b.getIsTau())
+                        m.setIsWeak(true);
                     //System.out.println("    "+m.getProcDecls().get(i)+b.getLabel());
                     if (curr.satisfies(b.getGuard(),i)){
                         //System.out.println("    "+m.getProcDecls().get(i)+b.getLabel());

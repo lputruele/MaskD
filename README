@@ -32,6 +32,3 @@ To replicate all experimental results shown on paper "Measuring Masking Fault-To
 This is the first version of the tool, we expect to add further features and examples
 soon.
 
-Known bugs:
--When having internal transitions (as the BRP example), faulty actions must be preserved in nominal model even though they are not used in the masking game, so for the case of BRP run maskD using the faulty model against itself.
-

@@ -37,6 +37,10 @@ public class ExplicitCompositeModel {
 		initial = v;
 	}
 
+	public void setIsWeak(boolean b){
+		isWeak = b;
+	}
+
 	public CompositeNode getInitial(){
 		return initial;
 	}
@@ -113,8 +117,6 @@ public class ExplicitCompositeModel {
 			labels.get(transition).add(lbl);
 			faultyActions.get(transition).add(faulty);
 			tauActions.get(transition).add(internal);
-			if (internal)
-				isWeak = true;
 			//check if label already added, I think this code was for when I thought this was not a multigraph
 			/*boolean addLabel = true;
 			for (String l : labels.get(transition)){
@@ -205,7 +207,6 @@ public class ExplicitCompositeModel {
 		for (CompositeNode p : nodes){
 			addEdge(p,p,"$",false,true); // p -> p is internal
 		}
-
 		boolean change = true;
 		//this lists will share the same size
 		LinkedList<CompositeNode> fsts;

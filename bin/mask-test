@@ -37,26 +37,26 @@ time java -jar $MASKD/maskD.jar ../tests/nominal/byzantine/byz4.test ../tests/fa
 
 echo "----------------------------Bounded Retransmission Protocol test----------------------------"
 echo "1 chunk(s), 1 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M1.test ../tests/faulty/brp/brpN1M1.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN1M1.test ../tests/faulty/brp/brpN1M1.test
 echo "1 chunk(s), 3 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M3.test ../tests/faulty/brp/brpN1M3.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN1M3.test ../tests/faulty/brp/brpN1M3.test
 echo "1 chunk(s), 5 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M5.test ../tests/faulty/brp/brpN1M5.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN1M5.test ../tests/faulty/brp/brpN1M5.test
 echo "1 chunk(s), 7 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN1M7.test ../tests/faulty/brp/brpN1M7.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN1M7.test ../tests/faulty/brp/brpN1M7.test
 echo "3 chunk(s), 1 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M1.test ../tests/faulty/brp/brpN3M1.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN3M1.test ../tests/faulty/brp/brpN3M1.test
 echo "3 chunk(s), 3 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M3.test ../tests/faulty/brp/brpN3M3.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN3M3.test ../tests/faulty/brp/brpN3M3.test
 echo "3 chunk(s), 5 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M5.test ../tests/faulty/brp/brpN3M5.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN3M5.test ../tests/faulty/brp/brpN3M5.test
 echo "3 chunk(s), 7 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN3M7.test ../tests/faulty/brp/brpN3M7.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN3M7.test ../tests/faulty/brp/brpN3M7.test
 echo "5 chunk(s), 1 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M1.test ../tests/faulty/brp/brpN5M1.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN5M1.test ../tests/faulty/brp/brpN5M1.test
 echo "5 chunk(s), 3 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M3.test ../tests/faulty/brp/brpN5M3.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN5M3.test ../tests/faulty/brp/brpN5M3.test
 echo "5 chunk(s), 5 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M5.test ../tests/faulty/brp/brpN5M5.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN5M5.test ../tests/faulty/brp/brpN5M5.test
 echo "5 chunk(s), 7 retransmission(s)"
-time java -jar $MASKD/maskD.jar ../tests/faulty/brp/brpN5M7.test ../tests/faulty/brp/brpN5M7.test
+time java -jar $MASKD/maskD.jar ../tests/nominal/brp/brpN5M7.test ../tests/faulty/brp/brpN5M7.test
