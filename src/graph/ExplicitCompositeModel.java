@@ -96,8 +96,7 @@ public class ExplicitCompositeModel {
 		Pair transition = new Pair(from,to);
 		if (labels.get(transition) == null)
 			return false;
-
-		return succList.get(from).contains(to) && preList.get(to).contains(from) && labels.get(transition).contains(lbl);
+		return  labels.get(transition).contains(lbl);
 	}
 
 
