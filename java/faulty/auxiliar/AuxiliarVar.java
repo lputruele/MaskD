@@ -136,7 +136,15 @@ public class AuxiliarVar extends AuxiliarExpression {
 		
 		this.enumName = n;
 	}
+
+	public boolean isEnumValue(){
+
+		return this.enumName != null;
+	}
     
+    public boolean hasEnumType(){
+    	return type.isEnumerated();
+    }
     
     public String toStringComplete(){
         

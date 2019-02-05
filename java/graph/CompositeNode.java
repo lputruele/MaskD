@@ -5,7 +5,8 @@ import faulty.auxiliar.*;
 
 
 public class CompositeNode implements Comparable{
-	HashMap<String,Boolean> state; // global state
+	HashMap<String,Boolean> state; // global state bool vars
+	HashMap<String,String> stateEnums; // global state enum vars
 	ExplicitCompositeModel model; // Global model whose this state belongs to
 	boolean isFaulty; // Is this state a faulty one?
 
@@ -16,12 +17,19 @@ public class CompositeNode implements Comparable{
 	public CompositeNode(ExplicitCompositeModel m){
 		model = m;
 		state = new HashMap<String,Boolean>();
+		stateEnums = new HashMap<String,String>();
 		for (AuxiliarVar v : model.getSharedVars()){
-			state.put(v.getName(),false);
+			if (v.hasEnumType())
+				stateEnums.put(v.getName(),"");
+			else
+				state.put(v.getName(),false);
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (AuxiliarVar v : model.getProcs().get(i).getVarBool()){
-				state.put(model.getProcDecls().get(i)+v.getName(),false);
+				if (v.hasEnumType())
+					stateEnums.put(model.getProcDecls().get(i)+v.getName(),"");
+				else
+					state.put(model.getProcDecls().get(i)+v.getName(),false);
 			}
 		}
 	}
@@ -36,11 +44,15 @@ public class CompositeNode implements Comparable{
 
 	@Override
 	public int hashCode(){
-	    return Objects.hash(state, model, isFaulty);
+	    return Objects.hash(state, stateEnums, model, isFaulty);
 	}
 
 	public HashMap<String,Boolean> getState(){
 		return state;
+	}
+
+	public HashMap<String,String> getStateEnums(){
+		return stateEnums;
 	}
 
 	public boolean getIsFaulty(){
@@ -65,11 +77,17 @@ public class CompositeNode implements Comparable{
 		for (AuxiliarVar v : model.getSharedVars()){
 			if (state.get(v.getName()))
 				res += v.getName() + ",";
+			if (v.hasEnumType() && stateEnums.get(v.getName())!=null)
+				res += v.getName() + "=" +stateEnums.get(v.getName())+ ",";
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (AuxiliarVar v : model.getProcs().get(i).getVarBool()){
 				if (state.get(model.getProcDecls().get(i)+v.getName()))
 					res += model.getProcDecls().get(i)+v.getName() + ",";
+			}
+			for (AuxiliarVar v : model.getProcs().get(i).getVarEnum()){
+				if (v.hasEnumType() && stateEnums.get(model.getProcDecls().get(i)+v.getName())!=null)
+					res += model.getProcDecls().get(i)+v.getName()+ "=" +stateEnums.get(model.getProcDecls().get(i)+v.getName()) + ",";
 			}
 		}
 		return res+">";
@@ -80,11 +98,17 @@ public class CompositeNode implements Comparable{
 		for (AuxiliarVar v : model.getSharedVars()){
 			if (state.get(v.getName()))
 				res += v.getName() + "_";
+			if (v.hasEnumType() && stateEnums.get(v.getName())!=null)
+				res += v.getName() + "" +stateEnums.get(v.getName())+ "_";
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (AuxiliarVar v : model.getProcs().get(i).getVarBool()){
 				if (state.get(model.getProcDecls().get(i)+v.getName()))
 					res += model.getProcDecls().get(i)+v.getName() + "_";
+			}
+			for (AuxiliarVar v : model.getProcs().get(i).getVarEnum()){
+				if (v.hasEnumType() && stateEnums.get(model.getProcDecls().get(i)+v.getName())!=null)
+					res += model.getProcDecls().get(i)+v.getName()+ "" +stateEnums.get(model.getProcDecls().get(i)+v.getName()) + "_";
 			}
 		}
 		return res;
@@ -97,10 +121,16 @@ public class CompositeNode implements Comparable{
 			for (AuxiliarVar var: model.getSharedVars()){
 				if (state.get(var.getName()) != n.getState().get(var.getName()))
 					return false;
+				if (stateEnums.get(var.getName()) != n.getStateEnums().get(var.getName()))
+					return false;
 			}
 			for (int i=0; i < model.getProcDecls().size(); i++){
 				for (AuxiliarVar v : model.getProcs().get(i).getVarBool()){
 					if (n.getState().get(model.getProcDecls().get(i)+v.getName()) != state.get(model.getProcDecls().get(i)+v.getName()))
+						return false;
+				}
+				for (AuxiliarVar v : model.getProcs().get(i).getVarEnum()){
+					if (n.getStateEnums().get(model.getProcDecls().get(i)+v.getName()) != stateEnums.get(model.getProcDecls().get(i)+v.getName()))
 						return false;
 				}
 			}
@@ -113,12 +143,19 @@ public class CompositeNode implements Comparable{
 		CompositeNode n = new CompositeNode();
 		n.model = model;
 		n.state = new HashMap<String,Boolean>();
+		n.stateEnums = new HashMap<String,String>();
 		for (AuxiliarVar v : model.getSharedVars()){
-			n.state.put(v.getName(),state.get(v.getName()));
+			if (v.hasEnumType())
+				n.getStateEnums().put(v.getName(),stateEnums.get(v.getName()));
+			else
+				n.getState().put(v.getName(),state.get(v.getName()));
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (AuxiliarVar v : model.getProcs().get(i).getVarBool()){
-				n.state.put(model.getProcDecls().get(i)+v.getName(),state.get(model.getProcDecls().get(i)+v.getName()));
+				n.getState().put(model.getProcDecls().get(i)+v.getName(),state.get(model.getProcDecls().get(i)+v.getName()));
+			}
+			for (AuxiliarVar v : model.getProcs().get(i).getVarEnum()){
+				n.getStateEnums().put(model.getProcDecls().get(i)+v.getName(),stateEnums.get(model.getProcDecls().get(i)+v.getName()));
 			}
 		}
 		return n;
@@ -126,10 +163,9 @@ public class CompositeNode implements Comparable{
 
 	public void evalInit(AuxiliarExpression e, int procIndex){
 		HashMap<String,Boolean> st = new HashMap<String,Boolean>();
-		//HashMap<String,String> stEnum = new HashMap<String,String>();
-		evalExprInit(e, false, st, procIndex);
-		//state.putAll(st);
-		//stateEnums.putAll(stEnum);
+		HashMap<String,String> stEnum = new HashMap<String,String>();
+		evalExprInit(e, false, st, stEnum, procIndex);
+		stateEnums.putAll(stEnum);
 		state.putAll(st);
 	}
 
@@ -153,62 +189,83 @@ public class CompositeNode implements Comparable{
 		return false;
 	}
 
-	private void evalExprInit(AuxiliarExpression e, boolean neg, HashMap<String,Boolean> st, int procIndex){
+	private void evalExprInit(AuxiliarExpression e, boolean neg, HashMap<String,Boolean> st, HashMap<String,String> stEnum, int procIndex){
 		if (e instanceof AuxiliarVar){
-			e = instanciateIfParam((AuxiliarVar)e,procIndex);
-			if (checkGlobalVar((AuxiliarVar)e)){ //global
+			AuxiliarVar e_ = (AuxiliarVar)e;
+			e_ = instanciateIfParam(e_,procIndex);
+			if (checkGlobalVar(e_)){ //global
 				if (neg)
-					st.put(((AuxiliarVar)e).getName(),false);
+					st.put(e_.getName(),false);
 				else
-					st.put(((AuxiliarVar)e).getName(),true);
+					st.put(e_.getName(),true);
 			}
 			else{ //local
 				if (neg)
-					st.put(model.getProcDecls().get(procIndex)+((AuxiliarVar)e).getName(),false);
+					st.put(model.getProcDecls().get(procIndex)+e_.getName(),false);
 				else
-					st.put(model.getProcDecls().get(procIndex)+((AuxiliarVar)e).getName(),true);
+					st.put(model.getProcDecls().get(procIndex)+e_.getName(),true);
 			}
 		}
 		if (e instanceof AuxiliarNegBoolExp){
-			evalExprInit(((AuxiliarNegBoolExp)e).getExp(),!neg, st,procIndex);
+			AuxiliarNegBoolExp e_ = (AuxiliarNegBoolExp)e;
+			evalExprInit(e_.getExp(),!neg,st,stEnum,procIndex);
 		}
 		if (e instanceof AuxiliarAndBoolExp){
-			evalExprInit(((AuxiliarAndBoolExp)e).getExp1(),neg,st,procIndex);
-			evalExprInit(((AuxiliarAndBoolExp)e).getExp2(),neg,st,procIndex);
+			AuxiliarAndBoolExp e_ = (AuxiliarAndBoolExp)e;
+			evalExprInit(e_.getExp1(),neg,st,stEnum,procIndex);
+			evalExprInit(e_.getExp2(),neg,st,stEnum,procIndex);
 		}
 		if (e instanceof AuxiliarEqBoolExp){
-			AuxiliarEqBoolExp exp = (AuxiliarEqBoolExp)e;
-			String varName = model.getProcDecls().get(procIndex)+((AuxiliarVar)exp.getInt1()).getName();
-			/*if (e.getInt2() instanceof AuxiliarVar) //then its an enum
-				stEnum.put(varName, ((AuxiliarVar)exp.getInt2()).getEnumName());
+			AuxiliarEqBoolExp e_ = (AuxiliarEqBoolExp)e;
+			String varName = model.getProcDecls().get(procIndex)+((AuxiliarVar)e_.getInt1()).getName();
+			if (e_.getInt2() instanceof AuxiliarVar) //then its an enum
+				stEnum.put(varName, ((AuxiliarVar)e_.getInt2()).getName());
 			else //its a bool*/
-				st.put(varName, ((AuxiliarConsBoolExp)exp.getInt2()).getValue());
+				st.put(varName, ((AuxiliarConsBoolExp)e_.getInt2()).getValue());
 		}
 	}
 
 	private boolean evalBoolExpr(AuxiliarExpression e, int procIndex){
 		if (e instanceof AuxiliarConsBoolExp){
-			return ((AuxiliarConsBoolExp)e).getValue();
+			AuxiliarConsBoolExp e_ = (AuxiliarConsBoolExp)e;
+			return e_.getValue();
 		}
 		if (e instanceof AuxiliarVar){
-			e = instanciateIfParam((AuxiliarVar)e,procIndex);
-			if (checkGlobalVar((AuxiliarVar)e)){
-				return state.get(((AuxiliarVar)e).getName());
+			AuxiliarVar e_ = (AuxiliarVar)e;
+			e_ = instanciateIfParam(e_,procIndex);
+			if (checkGlobalVar(e_)){
+				return state.get(e_.getName());
 			}
 			else
-				return state.get(model.getProcDecls().get(procIndex)+((AuxiliarVar)e).getName());
+				return state.get(model.getProcDecls().get(procIndex)+(e_.getName()));
 		}
 		if (e instanceof AuxiliarNegBoolExp){
-			return !evalBoolExpr(((AuxiliarNegBoolExp)e).getExp(),procIndex);
+			AuxiliarNegBoolExp e_ = (AuxiliarNegBoolExp)e;
+			return !evalBoolExpr(e_.getExp(),procIndex);
 		}
 		if (e instanceof AuxiliarAndBoolExp){
-			return evalBoolExpr(((AuxiliarAndBoolExp)e).getExp1(),procIndex) && evalBoolExpr(((AuxiliarAndBoolExp)e).getExp2(),procIndex);
+			AuxiliarAndBoolExp e_ = (AuxiliarAndBoolExp)e;
+			return evalBoolExpr(e_.getExp1(),procIndex) && evalBoolExpr(e_.getExp2(),procIndex);
 		}
 		if (e instanceof AuxiliarOrBoolExp){
-			return evalBoolExpr(((AuxiliarOrBoolExp)e).getExp1(),procIndex) || evalBoolExpr(((AuxiliarOrBoolExp)e).getExp2(),procIndex);
+			AuxiliarOrBoolExp e_ = (AuxiliarOrBoolExp)e;
+			return evalBoolExpr(e_.getExp1(),procIndex) || evalBoolExpr(e_.getExp2(),procIndex);
 		}
 		if (e instanceof AuxiliarEqBoolExp){
-			return evalBoolExpr(((AuxiliarEqBoolExp)e).getInt1(),procIndex) == evalBoolExpr(((AuxiliarEqBoolExp)e).getInt2(),procIndex);
+			AuxiliarEqBoolExp e_ = (AuxiliarEqBoolExp)e;
+			if (e_.getInt2() instanceof AuxiliarVar){ //check if its an Enum Eq
+				AuxiliarVar value = (AuxiliarVar)e_.getInt2();
+				if (value.isEnumValue() && e_.getInt1() instanceof AuxiliarVar){
+					AuxiliarVar var = instanciateIfParam((AuxiliarVar)e_.getInt1(),procIndex);
+					if (checkGlobalVar(var)){
+						return stateEnums.get(var.getName()).equals(value.getName());
+					}
+					else{
+						return stateEnums.get(model.getProcDecls().get(procIndex)+var.getName()).equals(value.getName());
+					}
+				}
+			}
+			return evalBoolExpr(e_.getInt1(),procIndex) == evalBoolExpr(e_.getInt2(),procIndex);
 		}
 		return false;
 	}
@@ -216,26 +273,38 @@ public class CompositeNode implements Comparable{
 	public CompositeNode createSuccessor(LinkedList<AuxiliarCode> assigns, int procIndex){
 		CompositeNode succ = clone();
 		for (AuxiliarCode c : assigns){
-			if (c instanceof AuxiliarVarAssign){
-				AuxiliarVarAssign assign = (AuxiliarVarAssign)c;
-				AuxiliarVar var = instanciateIfParam(assign.getVar(),procIndex);
-				String name = var.getName();
-				Boolean value = evalBoolExpr(assign.getExp(),procIndex);
-				if (checkGlobalVar(var))
-					succ.getState().put(name,value);
-				else
-					succ.getState().put(model.getProcDecls().get(procIndex)+name,value);
-			}
+			succ.updateSingleVar(c,procIndex);
 		}
 		return succ;
 	}
 
 	public void update(LinkedList<AuxiliarCode> assigns, int procIndex){
 		for (AuxiliarCode c : assigns){
-			if (c instanceof AuxiliarVarAssign){
-				AuxiliarVarAssign assign = (AuxiliarVarAssign)c;
-				AuxiliarVar var = instanciateIfParam(assign.getVar(),procIndex);
-				String name = var.getName();
+			this.updateSingleVar(c,procIndex);
+		}
+	}
+
+	private void updateSingleVar(AuxiliarCode c, int procIndex){
+		boolean isEnumAssign;
+		if (c instanceof AuxiliarVarAssign){
+			AuxiliarVarAssign assign = (AuxiliarVarAssign)c;
+			AuxiliarVar var = instanciateIfParam(assign.getVar(),procIndex);
+			String name = var.getName();
+			isEnumAssign = false;
+			//enum assign treatment
+			if (assign.getExp() instanceof AuxiliarVar){
+				AuxiliarVar exp = (AuxiliarVar) assign.getExp();
+				if (exp.hasEnumType()){
+					isEnumAssign = true;
+					String value = exp.getName();
+					if (checkGlobalVar(var))
+						this.getStateEnums().put(name,value);
+					else
+						this.getStateEnums().put(model.getProcDecls().get(procIndex)+name,value);
+				}
+			}
+			//boolean assign treatment
+			if (!isEnumAssign){
 				Boolean value = evalBoolExpr(assign.getExp(),procIndex);
 				if (checkGlobalVar(var))
 					this.getState().put(name,value);

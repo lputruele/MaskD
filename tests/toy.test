@@ -1,0 +1,16 @@
+Enum T = {hola,chau};
+
+Process toy{
+	d:T;
+	a,b,c:BOOL;
+	Initial: a && !b && !c && d == hola;
+	Normative: true;
+	[a1] a -> a=false, b=true, d = chau;
+	[a2] internal b -> b=false, c=true;
+	[a3] c -> c=false, a=true;
+}
+
+Main(){
+	t1:toy;
+	run t1();
+}

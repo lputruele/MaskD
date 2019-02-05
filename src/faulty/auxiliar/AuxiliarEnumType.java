@@ -6,7 +6,6 @@ import java.util.*;
  * This class contains all the information about an enumerable type
  * this is achieved by using hashmap that relates enumtypes with their size, and 
  * identifiers with their number
- * @author Ceci
  *
  */
 public class AuxiliarEnumType extends AuxiliarProgramNode{
