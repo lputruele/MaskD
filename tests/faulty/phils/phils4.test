@@ -1,10 +1,4 @@
-// This version of the faulty philosophers use only two bits to codify the state
-// of a philosopher, this reduces the state space of the examples
-// a enumeration type will be added in next versions of the tool
-// !s0!s1 : thinking
-// !s0 s1: hungry
-// s0!s1: eating
-// s0s1: faulty
+Enum STATE = {thinking,hungry,eating};
 
 Global fork0 : BOOL;
 Global fork1 : BOOL;
@@ -14,31 +8,31 @@ Global fork3 : BOOL;
 
 Process OddPhil(forkL: BOOL, forkR:BOOL){
    
-   s0,s1 : BOOL;
+   s : STATE;
    hasL, hasR : BOOL;
-   Initial: !s0 && !s1 && !hasL && !hasR && forkR && forkL;
+   Initial: s == thinking && !hasL && !hasR && forkR && forkL;
    Normative: !(hasR && !hasL);
 
-   [hungry] !s0 && !s1 -> s1 = true;
-   [getLeft] !s0 && s1 && forkL && !hasL && !hasR  -> forkL=false, hasL=true;
-   [getRight] !s0 && s1 && hasL && forkR && !hasR -> forkR = false, hasR=true;
-   [eating] !s0 && s1 && hasL && hasR -> s1 = false, s0 = true; 
-   [thinking] s0 && !s1 -> s0 = false, forkL=true, forkR=true, hasR=false, hasL=false;
+   [hungry] s == thinking -> s = hungry;
+   [getLeft] s == hungry && forkL && !hasL && !hasR  -> forkL=false, hasL=true;
+   [getRight] s == hungry && hasL && forkR && !hasR -> forkR = false, hasR=true;
+   [eating] s == hungry && hasL && hasR -> s = eating; 
+   [thinking] s == eating -> s = thinking, forkL=true, forkR=true, hasR=false, hasL=false;
 }
 
 Process EvenPhil(forkL: BOOL, forkR:BOOL){
 
-   s0,s1 : BOOL;
+   s : STATE;
    hasL, hasR : BOOL;
-   Initial: !s0 && !s1 && !hasL && !hasR && forkR && forkL;
+   Initial: s == thinking && !hasL && !hasR && forkR && forkL;
    Normative: !(hasL && !hasR); 
 
-   [hungry] !s0 && !s1 -> s1 = true;
-   [getRight] !s0 && s1 && forkR && !hasL && !hasR  -> forkR=false, hasR=true; 
-   [getLeft] !s0 && s1 && hasR && forkL && !hasL -> forkL = false, hasL=true;
-   [eating] !s0 && s1 && hasL && hasR -> s1 = false, s0 = true; 
-   [thinking] s0 && !s1 -> s0 = false, forkL=true, forkR=true, hasR=false, hasL=false;
-   [getLeft] faulty !s0 && s1 && !hasR && forkL && !hasL -> forkL = false, hasL=true;
+   [hungry] s == thinking -> s = hungry;
+   [getRight] s == hungry && forkR && !hasL && !hasR  -> forkR=false, hasR=true; 
+   [getLeft] s == hungry && hasR && forkL && !hasL -> forkL = false, hasL=true;
+   [eating] s == hungry && hasL && hasR -> s = eating; 
+   [thinking] s == eating -> s = thinking, forkL=true, forkR=true, hasR=false, hasL=false;
+   [getLeft] faulty s == hungry && !hasR && forkL && !hasL -> forkL = false, hasL=true;
    
 }
 

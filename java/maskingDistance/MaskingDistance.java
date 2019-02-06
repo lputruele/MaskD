@@ -30,6 +30,7 @@ public class MaskingDistance{
 		imp.saturate();
 		spec.createDot(false);
 		imp.createDot(true);
+		System.out.println("Building Game Graph...");
 		g = new GameGraph();
 
         //calculate initial state
@@ -208,6 +209,7 @@ public class MaskingDistance{
 		// We use dijsktra's algorithm to find the shortest path to an error state
 		// This is the main method of this class
     	buildGraph(specProgram, impProgram, deadlockIsError);
+    	System.out.println("Calculating Distance...");
     	//System.out.println("State space: "+g.getNumNodes());
     	//System.out.println("Number of edges: "+g.getNumEdges());
 
@@ -217,7 +219,7 @@ public class MaskingDistance{
         	n.setPreviousNodeInPath(null);
         }
         g.getInitial().setDistanceValue(0);
-
+        //System.out.println("Nodes:"+g.getNodes().size());
         // Find shortest path for all vertices
         for (int count = 0; count < g.getNodes().size(); count++){
         	int min = Integer.MAX_VALUE;
@@ -245,6 +247,7 @@ public class MaskingDistance{
                 }
             }
         }
+
         int minDistance = g.getErrState().getDistanceValue();
         
         double res= Math.round((double)1/(1+minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);

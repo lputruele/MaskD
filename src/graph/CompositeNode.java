@@ -121,7 +121,7 @@ public class CompositeNode implements Comparable{
 			for (AuxiliarVar var: model.getSharedVars()){
 				if (state.get(var.getName()) != n.getState().get(var.getName()))
 					return false;
-				if (stateEnums.get(var.getName()) != n.getStateEnums().get(var.getName()))
+				if (stateEnums.get(var.getName()) != null && !stateEnums.get(var.getName()).equals(n.getStateEnums().get(var.getName())))
 					return false;
 			}
 			for (int i=0; i < model.getProcDecls().size(); i++){
@@ -130,7 +130,7 @@ public class CompositeNode implements Comparable{
 						return false;
 				}
 				for (AuxiliarVar v : model.getProcs().get(i).getVarEnum()){
-					if (n.getStateEnums().get(model.getProcDecls().get(i)+v.getName()) != stateEnums.get(model.getProcDecls().get(i)+v.getName()))
+					if (!n.getStateEnums().get(model.getProcDecls().get(i)+v.getName()).equals(stateEnums.get(model.getProcDecls().get(i)+v.getName())))
 						return false;
 				}
 			}
