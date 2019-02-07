@@ -2,7 +2,7 @@ package mc;
 
 import java.io.*;
 
-import faulty.auxiliar.*;
+import faulty.*;
 import maskingDistance.*;
 
 /**
@@ -39,8 +39,8 @@ public class MainMD {
                 deadlockIsError = true;
               }
            }
-            AuxiliarProgram spec = prog.parseAux(args[args.length - 2]);
-            AuxiliarProgram imp = prog.parseAux(args[args.length - 1]);
+            Program spec = prog.parseAux(args[args.length - 2]);
+            Program imp = prog.parseAux(args[args.length - 1]);
             MaskingDistance md = new MaskingDistance();
             System.out.println("Masking Distance: "+md.calculateDistance(spec,imp,deadlockIsError));
             if (printTrace)

@@ -3,7 +3,7 @@ package mc;
 import java_cup.runtime.*;
 import java.io.*;
 import java.util.LinkedList;
-import faulty.auxiliar.*;
+import faulty.*;
 import parserProgram.*;
 
 /**
@@ -12,7 +12,7 @@ import parserProgram.*;
 public class ProgramParser {
 	
 	private parserFaulty parser;	// Parser
-	private static LinkedList<faulty.auxiliar.Error> errorList; // Errors
+	private static LinkedList<faulty.Error> errorList; // Errors
     private static SymbolsTable symbolsTable;
     private static FileReader programFile;
     
@@ -32,7 +32,7 @@ public class ProgramParser {
 
             // Read file
             parser = new parserFaulty(new scannerFaulty(programFile));
-            AuxiliarProgram program = (AuxiliarProgram)parser.parse().value;
+            Program program = (Program)parser.parse().value;
 
              
             
@@ -54,13 +54,13 @@ public class ProgramParser {
         
     }
 
-    public AuxiliarProgram parseAux(String NameFile){
+    public Program parseAux(String NameFile){
         try {
             programFile = new FileReader(NameFile);
         
             // Read file
             parser = new parserFaulty(new scannerFaulty(programFile));
-            AuxiliarProgram program = (AuxiliarProgram)parser.parse().value;
+            Program program = (Program)parser.parse().value;
             
             // Check Types
             Type result = checkTypes(program);
@@ -93,7 +93,7 @@ public class ProgramParser {
  	/**
  	 * Check types
  	 */
- 	private static Type checkTypes(AuxiliarProgram prog) {
+ 	private static Type checkTypes(Program prog) {
         TypeCheckerVisitor typeV = new TypeCheckerVisitor();
         prog.accept(typeV);
         Type result = typeV.getType();

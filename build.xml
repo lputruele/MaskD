@@ -10,7 +10,6 @@
   <property name="java.mc"     location="java/mc"/>
   <property name="java.parserProgram"     location="java/parserProgram"/>
   <property name="java.faulty"     location="java/faulty"/>
-  <property name="java.faulty.auxiliar"     location="java/faulty/auxiliar"/>
   <property name="java.graph"     location="java/graph"/>
   <property name="java.maskingDistance"     location="java/maskingDistance"/>
   <property name="jar.file"       location="${dist}/${ant.project.name}.jar"/>
@@ -59,15 +58,12 @@
     <mkdir dir="${java}"/>
     <mkdir dir="${dist}"/>
     <mkdir dir="${java.mc}"/>
-    <mkdir dir="${java.faulty.auxiliar}"/>
+    <mkdir dir="${java.faulty}"/>
     <mkdir dir="${java.graph}"/>
     <mkdir dir="${java.maskingDistance}"/>
       
     <copy todir="${java.faulty}">
           <fileset dir="src/faulty" includes="**.java"/>
-    </copy>
-    <copy todir="${java.faulty.auxiliar}">
-          <fileset dir="src/faulty/auxiliar" includes="**.java"/>
     </copy>
     <copy todir="${java.mc}">
           <fileset dir="src/mc" includes=".java"/>

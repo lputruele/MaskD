@@ -1,7 +1,7 @@
 package graph;
 
 import java.util.*;
-import faulty.auxiliar.*;
+import faulty.*;
 import java.io.*;
 
 public class ExplicitCompositeModel {
@@ -11,15 +11,15 @@ public class ExplicitCompositeModel {
 	private HashMap<Pair, LinkedList<Boolean>> faultyActions; // Faulty transitions
 	private HashMap<Pair, LinkedList<Boolean>> tauActions; // Internal transitions
 	private CompositeNode initial; // Initial State
-	private LinkedList<AuxiliarVar> sharedVars; // Global variables
+	private LinkedList<Var> sharedVars; // Global variables
 	private LinkedList<CompositeNode> nodes; // Global states
 	private int numNodes;
 	private int numEdges;
-	private LinkedList<AuxiliarProcess> procs;
+	private LinkedList<Proc> procs;
 	private LinkedList<String> procDecls;
 	private boolean isWeak;
 
-	public ExplicitCompositeModel(LinkedList<AuxiliarVar> svs) {
+	public ExplicitCompositeModel(LinkedList<Var> svs) {
 		sharedVars = svs;
 		succList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
 		preList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
@@ -28,7 +28,7 @@ public class ExplicitCompositeModel {
 		tauActions = new HashMap<Pair, LinkedList<Boolean>>();
 		numNodes = numEdges = 0;
 		nodes = new LinkedList<CompositeNode>();
-		procs = new LinkedList<AuxiliarProcess>();
+		procs = new LinkedList<Proc>();
 		procDecls = new LinkedList<String>();
 		isWeak = false;
 	}
@@ -45,7 +45,7 @@ public class ExplicitCompositeModel {
 		return initial;
 	}
 
-	public LinkedList<AuxiliarVar> getSharedVars(){
+	public LinkedList<Var> getSharedVars(){
 		return sharedVars;
 	}
 
@@ -61,7 +61,7 @@ public class ExplicitCompositeModel {
 		return tauActions;
 	}
 
-	public LinkedList<AuxiliarProcess> getProcs(){
+	public LinkedList<Proc> getProcs(){
 		return procs;
 	}
 
@@ -199,13 +199,12 @@ public class ExplicitCompositeModel {
 
 
 	public void saturate(){
-		if (!isWeak)
-			return;
-
 		//Add tau self-loops
 		for (CompositeNode p : nodes){
 			addEdge(p,p,"$",false,true); // p -> p is internal
 		}
+		if (!isWeak)
+			return;
 		boolean change = true;
 		//this lists will share the same size
 		LinkedList<CompositeNode> fsts;
