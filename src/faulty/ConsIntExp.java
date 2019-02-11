@@ -7,7 +7,7 @@ import java.util.*;
  * A class representing an integer constant
  */
 // Intcons it represents a constant of type Int
-public class ConsIntExp extends Expression{
+public class ConsIntExp extends IntExp{
     
 	Integer value;
     /**
@@ -32,4 +32,8 @@ public class ConsIntExp extends Expression{
 	public void accept(FaultyVisitor v){
 	     v.visit(this);			
 	}
+
+    public Integer getValue(){
+        return value;
+    }
 }

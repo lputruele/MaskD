@@ -334,7 +334,7 @@ public class Program extends ProgramNode{
 */
     /*TOTRY: Create the whole model on the fly*/
     public ExplicitCompositeModel toGraph(){
-        ExplicitCompositeModel m = new ExplicitCompositeModel(globalVars.getBoolVars());
+        ExplicitCompositeModel m = new ExplicitCompositeModel(globalVars);
 
         //states in m are lists of states (from processes)
         //calculate initial state

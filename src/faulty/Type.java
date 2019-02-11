@@ -33,7 +33,7 @@ public enum Type {
     }
 
 
-    public boolean isBOOLEAN() {
+    public boolean isBoolean() {
 		if (this == Type.BOOL) {
 			return true;
 		}
@@ -41,7 +41,7 @@ public enum Type {
 		return false;
 	}
 
-	public boolean isINT() {
+	public boolean isInt() {
 		if (this == Type.INT) {
 			return true;
 		}

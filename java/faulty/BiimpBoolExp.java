@@ -2,7 +2,7 @@ package faulty;
 
 
 /**
- *  A class to represent the "and" of two boolean expressions
+ *  A class to represent the "if and only if" of two boolean expressions
  */
 public class BiimpBoolExp extends Expression{
 	Expression exp1; // the left expression
@@ -25,5 +25,13 @@ public class BiimpBoolExp extends Expression{
 	public void accept(FaultyVisitor v){
 	     v.visit(this);			
 	}
+
+    public Expression getExp1(){
+        return exp1;
+    }
+
+    public Expression getExp2(){
+        return exp2;
+    }
        
 }

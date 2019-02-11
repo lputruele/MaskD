@@ -19,8 +19,10 @@ public class ExplicitCompositeModel {
 	private LinkedList<String> procDecls;
 	private boolean isWeak;
 
-	public ExplicitCompositeModel(LinkedList<Var> svs) {
-		sharedVars = svs;
+	public ExplicitCompositeModel(GlobalVarCollection svs) {
+		sharedVars = svs.getBoolVars();
+		sharedVars.addAll(svs.getEnumVars());
+		sharedVars.addAll(svs.getIntVars());
 		succList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
 		preList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
 		labels = new HashMap<Pair, LinkedList<String>>();

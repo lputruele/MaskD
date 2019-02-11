@@ -7,6 +7,7 @@ import faulty.*;
 public class CompositeNode implements Comparable{
 	HashMap<String,Boolean> state; // global state bool vars
 	HashMap<String,String> stateEnums; // global state enum vars
+	HashMap<String,Integer> stateInts; // global state enum vars
 	ExplicitCompositeModel model; // Global model whose this state belongs to
 	boolean isFaulty; // Is this state a faulty one?
 
@@ -18,18 +19,25 @@ public class CompositeNode implements Comparable{
 		model = m;
 		state = new HashMap<String,Boolean>();
 		stateEnums = new HashMap<String,String>();
+		stateInts = new HashMap<String,Integer>();
 		for (Var v : model.getSharedVars()){
-			if (v.hasEnumType())
+			if (v.getType().isEnumerated())
 				stateEnums.put(v.getName(),"");
 			else
-				state.put(v.getName(),false);
+				if (v.getType().isInt())
+					stateInts.put(v.getName(),0);
+				else
+					state.put(v.getName(),false);
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (Var v : model.getProcs().get(i).getVarBool()){
-				if (v.hasEnumType())
-					stateEnums.put(model.getProcDecls().get(i)+v.getName(),"");
-				else
-					state.put(model.getProcDecls().get(i)+v.getName(),false);
+				state.put(model.getProcDecls().get(i)+v.getName(),false);
+			}
+			for (Var v : model.getProcs().get(i).getVarEnum()){
+				stateEnums.put(model.getProcDecls().get(i)+v.getName(),"");
+			}
+			for (Var v : model.getProcs().get(i).getVarInt()){
+				stateInts.put(model.getProcDecls().get(i)+v.getName(),0);
 			}
 		}
 	}
@@ -44,7 +52,7 @@ public class CompositeNode implements Comparable{
 
 	@Override
 	public int hashCode(){
-	    return Objects.hash(state, stateEnums, model, isFaulty);
+	    return Objects.hash(state, stateEnums, stateInts, model, isFaulty);
 	}
 
 	public HashMap<String,Boolean> getState(){
@@ -53,6 +61,10 @@ public class CompositeNode implements Comparable{
 
 	public HashMap<String,String> getStateEnums(){
 		return stateEnums;
+	}
+
+	public HashMap<String,Integer> getStateInts(){
+		return stateInts;
 	}
 
 	public boolean getIsFaulty(){
@@ -79,6 +91,8 @@ public class CompositeNode implements Comparable{
 				res += v.getName() + ",";
 			if (v.hasEnumType() && stateEnums.get(v.getName())!=null)
 				res += v.getName() + "=" +stateEnums.get(v.getName())+ ",";
+			if (stateInts.get(v.getName())!=null)
+				res += v.getName() + "=" +stateInts.get(v.getName())+ ",";
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (Var v : model.getProcs().get(i).getVarBool()){
@@ -88,6 +102,10 @@ public class CompositeNode implements Comparable{
 			for (Var v : model.getProcs().get(i).getVarEnum()){
 				if (v.hasEnumType() && stateEnums.get(model.getProcDecls().get(i)+v.getName())!=null)
 					res += model.getProcDecls().get(i)+v.getName()+ "=" +stateEnums.get(model.getProcDecls().get(i)+v.getName()) + ",";
+			}
+			for (Var v : model.getProcs().get(i).getVarInt()){
+				if (stateInts.get(model.getProcDecls().get(i)+v.getName())!=null)
+					res += model.getProcDecls().get(i)+v.getName()+ "=" +stateInts.get(model.getProcDecls().get(i)+v.getName()) + ",";
 			}
 		}
 		return res+">";
@@ -100,6 +118,8 @@ public class CompositeNode implements Comparable{
 				res += v.getName() + "_";
 			if (v.hasEnumType() && stateEnums.get(v.getName())!=null)
 				res += v.getName() + "" +stateEnums.get(v.getName())+ "_";
+			if (stateInts.get(v.getName())!=null)
+				res += v.getName() + "" +stateInts.get(v.getName())+ "_";
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (Var v : model.getProcs().get(i).getVarBool()){
@@ -109,6 +129,10 @@ public class CompositeNode implements Comparable{
 			for (Var v : model.getProcs().get(i).getVarEnum()){
 				if (v.hasEnumType() && stateEnums.get(model.getProcDecls().get(i)+v.getName())!=null)
 					res += model.getProcDecls().get(i)+v.getName()+ "" +stateEnums.get(model.getProcDecls().get(i)+v.getName()) + "_";
+			}
+			for (Var v : model.getProcs().get(i).getVarInt()){
+				if (stateInts.get(model.getProcDecls().get(i)+v.getName())!=null)
+					res += model.getProcDecls().get(i)+v.getName()+ "" +stateInts.get(model.getProcDecls().get(i)+v.getName()) + "_";
 			}
 		}
 		return res;
@@ -123,6 +147,8 @@ public class CompositeNode implements Comparable{
 					return false;
 				if (stateEnums.get(var.getName()) != null && !stateEnums.get(var.getName()).equals(n.getStateEnums().get(var.getName())))
 					return false;
+				if (stateInts.get(var.getName()) != null && !stateInts.get(var.getName()).equals(n.getStateInts().get(var.getName())))
+					return false;
 			}
 			for (int i=0; i < model.getProcDecls().size(); i++){
 				for (Var v : model.getProcs().get(i).getVarBool()){
@@ -131,6 +157,10 @@ public class CompositeNode implements Comparable{
 				}
 				for (Var v : model.getProcs().get(i).getVarEnum()){
 					if (!n.getStateEnums().get(model.getProcDecls().get(i)+v.getName()).equals(stateEnums.get(model.getProcDecls().get(i)+v.getName())))
+						return false;
+				}
+				for (Var v : model.getProcs().get(i).getVarInt()){
+					if (!n.getStateInts().get(model.getProcDecls().get(i)+v.getName()).equals(stateInts.get(model.getProcDecls().get(i)+v.getName())))
 						return false;
 				}
 			}
@@ -144,11 +174,15 @@ public class CompositeNode implements Comparable{
 		n.model = model;
 		n.state = new HashMap<String,Boolean>();
 		n.stateEnums = new HashMap<String,String>();
+		n.stateInts = new HashMap<String,Integer>();
 		for (Var v : model.getSharedVars()){
-			if (v.hasEnumType())
+			if (v.getType().isEnumerated())
 				n.getStateEnums().put(v.getName(),stateEnums.get(v.getName()));
 			else
-				n.getState().put(v.getName(),state.get(v.getName()));
+				if (v.getType().isInt())
+					n.getStateInts().put(v.getName(),stateInts.get(v.getName()));
+				else
+					n.getState().put(v.getName(),state.get(v.getName()));
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (Var v : model.getProcs().get(i).getVarBool()){
@@ -157,6 +191,9 @@ public class CompositeNode implements Comparable{
 			for (Var v : model.getProcs().get(i).getVarEnum()){
 				n.getStateEnums().put(model.getProcDecls().get(i)+v.getName(),stateEnums.get(model.getProcDecls().get(i)+v.getName()));
 			}
+			for (Var v : model.getProcs().get(i).getVarInt()){
+				n.getStateInts().put(model.getProcDecls().get(i)+v.getName(),stateInts.get(model.getProcDecls().get(i)+v.getName()));
+			}
 		}
 		return n;
 	}
@@ -164,9 +201,11 @@ public class CompositeNode implements Comparable{
 	public void evalInit(Expression e, int procIndex){
 		HashMap<String,Boolean> st = new HashMap<String,Boolean>();
 		HashMap<String,String> stEnum = new HashMap<String,String>();
-		evalExprInit(e, false, st, stEnum, procIndex);
+		HashMap<String,Integer> stInt = new HashMap<String,Integer>();
+		evalExprInit(e, false, st, stEnum, stInt, procIndex);
 		stateEnums.putAll(stEnum);
 		state.putAll(st);
+		stateInts.putAll(stInt);
 	}
 
 	private Var instanciateIfParam(Var v, int procIndex){
@@ -189,7 +228,7 @@ public class CompositeNode implements Comparable{
 		return false;
 	}
 
-	private void evalExprInit(Expression e, boolean neg, HashMap<String,Boolean> st, HashMap<String,String> stEnum, int procIndex){
+	private void evalExprInit(Expression e, boolean neg, HashMap<String,Boolean> st, HashMap<String,String> stEnum, HashMap<String,Integer> stInt, int procIndex){
 		if (e instanceof Var){
 			Var e_ = (Var)e;
 			e_ = instanciateIfParam(e_,procIndex);
@@ -208,21 +247,58 @@ public class CompositeNode implements Comparable{
 		}
 		if (e instanceof NegBoolExp){
 			NegBoolExp e_ = (NegBoolExp)e;
-			evalExprInit(e_.getExp(),!neg,st,stEnum,procIndex);
+			evalExprInit(e_.getExp(),!neg,st,stEnum,stInt,procIndex);
 		}
 		if (e instanceof AndBoolExp){
 			AndBoolExp e_ = (AndBoolExp)e;
-			evalExprInit(e_.getExp1(),neg,st,stEnum,procIndex);
-			evalExprInit(e_.getExp2(),neg,st,stEnum,procIndex);
+			evalExprInit(e_.getExp1(),neg,st,stEnum,stInt,procIndex);
+			evalExprInit(e_.getExp2(),neg,st,stEnum,stInt,procIndex);
 		}
 		if (e instanceof EqBoolExp){
 			EqBoolExp e_ = (EqBoolExp)e;
-			String varName = model.getProcDecls().get(procIndex)+((Var)e_.getInt1()).getName();
-			if (e_.getInt2() instanceof Var) //then its an enum
-				stEnum.put(varName, ((Var)e_.getInt2()).getName());
-			else //its a bool*/
-				st.put(varName, ((ConsBoolExp)e_.getInt2()).getValue());
+			String varName = model.getProcDecls().get(procIndex)+((Var)e_.getExp1()).getName();
+			if (e_.getExp2() instanceof Var) //then its an enum
+				stEnum.put(varName, ((Var)e_.getExp2()).getName());
+			else
+				if (e_.getExp2() instanceof ConsIntExp) //its an int
+					stInt.put(varName, evalIntExpr(e_.getExp2(), procIndex));
+				else //its a bool*/
+					st.put(varName, ((ConsBoolExp)e_.getExp2()).getValue());
 		}
+	}
+
+	private Integer evalIntExpr(Expression e, int procIndex){
+		if (e instanceof ConsIntExp){
+			ConsIntExp e_ = (ConsIntExp)e;
+			return e_.getValue();
+		}
+		if (e instanceof Var){
+			Var e_ = (Var)e;
+			e_ = instanciateIfParam(e_,procIndex);
+			if (checkGlobalVar(e_)){
+				return stateInts.get(e_.getName());
+			}
+			else
+				return stateInts.get(model.getProcDecls().get(procIndex)+(e_.getName()));
+		}
+		if (e instanceof NegIntExp){
+			NegIntExp e_ = (NegIntExp)e;
+			//return evalIntExpr(e_.getExp(),procIndex) * (-1);
+			return evalIntExpr(e_.getExp1(),procIndex) - evalIntExpr(e_.getExp2(),procIndex);
+		}
+		if (e instanceof MultIntExp){
+			MultIntExp e_ = (MultIntExp)e;
+			return evalIntExpr(e_.getExp1(),procIndex) * evalIntExpr(e_.getExp2(),procIndex);
+		}
+		if (e instanceof SumIntExp){
+			SumIntExp e_ = (SumIntExp)e;
+			return evalIntExpr(e_.getExp1(),procIndex) + evalIntExpr(e_.getExp2(),procIndex);
+		}
+		if (e instanceof DivIntExp){
+			SumIntExp e_ = (SumIntExp)e;
+			return evalIntExpr(e_.getExp1(),procIndex) / evalIntExpr(e_.getExp2(),procIndex);
+		}
+		return 0;
 	}
 
 	private boolean evalBoolExpr(Expression e, int procIndex){
@@ -253,10 +329,10 @@ public class CompositeNode implements Comparable{
 		}
 		if (e instanceof EqBoolExp){
 			EqBoolExp e_ = (EqBoolExp)e;
-			if (e_.getInt2() instanceof Var){ //check if its an Enum Eq
-				Var value = (Var)e_.getInt2();
-				if (value.isEnumValue() && e_.getInt1() instanceof Var){
-					Var var = instanciateIfParam((Var)e_.getInt1(),procIndex);
+			if (e_.getExp2() instanceof Var){ //check if its an Enum Eq
+				Var value = (Var)e_.getExp2();
+				if (value.isEnumValue() && e_.getExp1() instanceof Var){
+					Var var = instanciateIfParam((Var)e_.getExp1(),procIndex);
 					if (checkGlobalVar(var)){
 						return stateEnums.get(var.getName()).equals(value.getName());
 					}
@@ -265,7 +341,18 @@ public class CompositeNode implements Comparable{
 					}
 				}
 			}
-			return evalBoolExpr(e_.getInt1(),procIndex) == evalBoolExpr(e_.getInt2(),procIndex);
+			if (e_.getExp2() instanceof IntExp || (e_.getExp2() instanceof Var && ((Var)e_.getExp2()).getType().isInt())){
+				return evalIntExpr(e_.getExp1(),procIndex).equals(evalIntExpr(e_.getExp2(),procIndex));
+			}
+			return evalBoolExpr(e_.getExp1(),procIndex) == evalBoolExpr(e_.getExp2(),procIndex);
+		}
+		if (e instanceof GreaterBoolExp){
+			GreaterBoolExp e_ = (GreaterBoolExp)e;
+			return evalIntExpr(e_.getExp1(),procIndex) > evalIntExpr(e_.getExp2(),procIndex);
+		}
+		if (e instanceof LessBoolExp){
+			LessBoolExp e_ = (LessBoolExp)e;
+			return evalIntExpr(e_.getExp1(),procIndex) < evalIntExpr(e_.getExp2(),procIndex);
 		}
 		return false;
 	}
@@ -285,14 +372,36 @@ public class CompositeNode implements Comparable{
 	}
 
 	private void updateSingleVar(Code c, int procIndex){
-		boolean isEnumAssign;
+		//boolean isEnumAssign;
 		if (c instanceof VarAssign){
 			VarAssign assign = (VarAssign)c;
 			Var var = instanciateIfParam(assign.getVar(),procIndex);
 			String name = var.getName();
-			isEnumAssign = false;
+			//isEnumAssign = false;
+			if (var.getType().isBoolean()){
+				Boolean value = evalBoolExpr(assign.getExp(),procIndex);
+				if (checkGlobalVar(var))
+					this.getState().put(name,value);
+				else
+					this.getState().put(model.getProcDecls().get(procIndex)+name,value);
+			}
+			if (var.getType().isInt()){
+				Integer value = evalIntExpr(assign.getExp(),procIndex);
+				if (checkGlobalVar(var))
+					this.getStateInts().put(name,value);
+				else
+					this.getStateInts().put(model.getProcDecls().get(procIndex)+name,value);
+			}
+			if (var.getType().isEnumerated()){
+				Var exp = (Var) assign.getExp();
+				String value = exp.getName();
+				if (checkGlobalVar(var))
+					this.getStateEnums().put(name,value);
+				else
+					this.getStateEnums().put(model.getProcDecls().get(procIndex)+name,value);
+			}
 			//enum assign treatment
-			if (assign.getExp() instanceof Var){
+			/*if (assign.getExp() instanceof Var){
 				Var exp = (Var) assign.getExp();
 				if (exp.hasEnumType()){
 					isEnumAssign = true;
@@ -310,7 +419,7 @@ public class CompositeNode implements Comparable{
 					this.getState().put(name,value);
 				else
 					this.getState().put(model.getProcDecls().get(procIndex)+name,value);
-			}
+			}*/
 		}
 	}
 

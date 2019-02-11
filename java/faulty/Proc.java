@@ -17,7 +17,7 @@ public class Proc extends ProgramNode {
 	LinkedList<Var> boolVars; // it has a collections of local variables of type boolean
     LinkedList<Var> enumVars; // it has a collections of local variables of type enumerated
     
-	LinkedList<Branch> branches; // a collection of branches (Bi -> Ci)
+	LinkedList<Branch> branches; // a collection of branches consisting of a guard and a command
 	Expression normCondition; // normative condition for characterising the non-faulty part of the program
 	Expression initialCond; // the initial valuations of the local variables.
 	LinkedList<String> processInstanceNames; // Names of the differents process Instances
@@ -57,11 +57,11 @@ public class Proc extends ProgramNode {
 		 /* --- Adding the Declarated Vbles according the type ---*/
         for (int i = 0; i < varList.size(); i++){
             
-            if ( varList.get(i).getType().isBOOLEAN() ){
+            if ( varList.get(i).getType().isBoolean() ){
             	boolVars.add(varList.get(i));
             }
             else{
-                if ( varList.get(i).getType().isINT() ){
+                if ( varList.get(i).getType().isInt() ){
                     intVars.add(varList.get(i));
                 }else{
                     enumVars.add(varList.get(i));
@@ -89,11 +89,11 @@ public class Proc extends ProgramNode {
 		/* --- Adding the Declarated Vbles according the type ---*/
         for (int i = 0; i < varList.size(); i++){
             
-            if ( varList.get(i).getType().isBOOLEAN() ){
+            if ( varList.get(i).getType().isBoolean() ){
             	boolVars.add(varList.get(i));
             }
             else{
-                if ( varList.get(i).getType().isINT() ){
+                if ( varList.get(i).getType().isInt() ){
                     intVars.add(varList.get(i));
                 }else{
                     enumVars.add(varList.get(i));
@@ -202,7 +202,7 @@ public class Proc extends ProgramNode {
         
         for(int i=0;i<invkPar.size();i++){
             Var var = (Var)invkPar.get(i);
-            if(var.getType().isBOOLEAN()){
+            if(var.getType().isBoolean()){
                 boolPar.add(invkPar.get(i));
             }
         }
@@ -225,7 +225,7 @@ public class Proc extends ProgramNode {
         for(int i=0;i<invkPar.size();i++){
             Var var = (Var)invkPar.get(i);
             
-            if(var.getType().isINT()){
+            if(var.getType().isInt()){
                 intPar.add(invkPar.get(i));
             }
         }
@@ -489,9 +489,9 @@ public class Proc extends ProgramNode {
         }
         params = "";
         for (int i = 0; i < paramList.size(); i++){
-            if (paramList.get(i).getType().isBOOLEAN())
+            if (paramList.get(i).getType().isBoolean())
                 params += "  Bool" + " "+ paramList.get(i).getDeclarationName() + ";\n";
-            if (paramList.get(i).getType().isINT())
+            if (paramList.get(i).getType().isInt())
                 params += "  Int" + " "+ paramList.get(i).getDeclarationName() + ";\n";
             if (paramList.get(i).getType().isEnumerated())
                 params += paramList.get(i).getEnumName() + " "+ paramList.get(i).getDeclarationName() + ";\n";
@@ -499,9 +499,9 @@ public class Proc extends ProgramNode {
         attributes = "  Thread t; \n" + ints + bools + enums + params +"\n";
         init = "  public " + processName + "(";
         for (int i = 0; i < paramList.size(); i++){
-            if (paramList.get(i).getType().isBOOLEAN())
+            if (paramList.get(i).getType().isBoolean())
                 init += "Bool" + " "+ paramList.get(i).getDeclarationName();
-            if (paramList.get(i).getType().isINT())
+            if (paramList.get(i).getType().isInt())
                 init += "Int" + " "+ paramList.get(i).getDeclarationName();
             if (paramList.get(i).getType().isEnumerated())
                 init += paramList.get(i).getEnumName() + " "+ paramList.get(i).getDeclarationName();

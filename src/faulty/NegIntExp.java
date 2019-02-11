@@ -7,7 +7,7 @@ package faulty;
  * Class representing  the subtraction of two integers: exp1 - exp2
  * 
  */
-public class NegIntExp extends Expression{
+public class NegIntExp extends IntExp{
 	Expression exp1; // the first integer
 	Expression exp2; // the second integer
     
@@ -30,6 +30,14 @@ public class NegIntExp extends Expression{
 	public void accept(FaultyVisitor v){
 	     v.visit(this);			
 	}
+
+    public Expression getExp1(){
+        return exp1;
+    }
+
+    public Expression getExp2(){
+        return exp2;
+    }
     
     
     

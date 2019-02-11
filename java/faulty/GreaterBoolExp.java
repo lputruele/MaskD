@@ -8,8 +8,8 @@ package faulty;
  */
 
 public class GreaterBoolExp extends BoolExp{
-	Expression int1; // left int
-	Expression int2; // right int
+	Expression exp1; // left int
+	Expression exp2; // right int
 
     /**
      * Constructor, it takes the two integer in the comparison as parameters
@@ -18,8 +18,8 @@ public class GreaterBoolExp extends BoolExp{
      */
     public GreaterBoolExp(Expression int1, Expression int2){
     	super();
-        this.int1 = int1;
-        this.int2 = int2;
+        this.exp1 = int1;
+        this.exp2 = int2;
     }
 
     @Override
@@ -27,5 +27,12 @@ public class GreaterBoolExp extends BoolExp{
 	     v.visit(this);			
 	}
     
+    public Expression getExp1(){
+        return exp1;
+    }
+
+    public Expression getExp2(){
+        return exp2;
+    }
     
 }

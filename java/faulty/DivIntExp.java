@@ -7,7 +7,7 @@ package faulty;
  * A class that implements the division between two integers: int1 / int2
  * TO BE IMPLEMENTED, DO NOT USE 
  */
-public class DivIntExp extends Expression{
+public class DivIntExp extends IntExp{
 	Expression exp1; // left integer
 	Expression exp2; // right integer
      
@@ -27,6 +27,14 @@ public class DivIntExp extends Expression{
 	public void accept(FaultyVisitor v){
 	     v.visit(this);			
 	}
+
+    public Expression getExp1(){
+        return exp1;
+    }
+
+    public Expression getExp2(){
+        return exp2;
+    }
    
     
 }

@@ -194,11 +194,11 @@ globalVarList ::=  globalDecl:listD {:
                                          Var var;
                                          for (int i = 0; i < listD.size(); i++){
                                             var = listD.get(i);
-                                            if(var.getType().isINT()){
+                                            if(var.getType().isInt()){
                                                 list.addGlobalIntVar(var);
                                             }
                                             else{
-                                                if(var.getType().isBOOLEAN()){
+                                                if(var.getType().isBoolean()){
                                                     list.addGlobalBoolVar(var);
                                                 }
                                                 else{
@@ -211,11 +211,11 @@ globalVarList ::=  globalDecl:listD {:
                 | globalVarList:list SEMICOLON globalDecl:listD  {: Var var;
                                                                     for (int i = 0; i < listD.size(); i++){
                                                                        var = listD.get(i);
-                                                                       if(var.getType().isINT()){
+                                                                       if(var.getType().isInt()){
                                                                            list.addGlobalIntVar(var);
                                                                        }
                                                                        else{
-                                                                           if(var.getType().isBOOLEAN()){
+                                                                           if(var.getType().isBoolean()){
                                                                                list.addGlobalBoolVar(var);
                                                                            }
                                                                            else{
@@ -232,14 +232,14 @@ globalVarList ::=  globalDecl:listD {:
 globalDecl ::= GLOBAL varDecls:listNames COLON type:t {:  LinkedList<Var> list = new LinkedList<Var>();
                                                           Var v;
                                              
-                                                          if ( t.isINT() ){
+                                                          if ( t.isInt() ){
                                                              for (int i = 0; i < listNames.size(); i++){
                                                                  v = new Var(listNames.get(i), Type.INT);
                                                                  list.add(v);
                                                              }
                                                           }
                                                           else{
-                                                              if ( t.isBOOLEAN() ){
+                                                              if ( t.isBoolean() ){
                                                                   for (int i = 0; i < listNames.size(); i++){
                                                                      v = new Var(listNames.get(i), Type.BOOL);
                                                                      list.add(v);
@@ -261,11 +261,11 @@ globalDecl ::= GLOBAL varDecls:listNames COLON type:t {:  LinkedList<Var> list =
 
 
 channelList ::= chanDecl:c {:     ChannelCollection list = new ChannelCollection();
-                                  if(c.getType().isBOOLEAN()){
+                                  if(c.getType().isBoolean()){
                                       list.addBoolChannel(c);
                                   }
                                   else{
-                                       if(c.getType().isINT()){
+                                       if(c.getType().isInt()){
                                            list.addIntChannel(c);
                                        }
                                        else{
@@ -276,11 +276,11 @@ channelList ::= chanDecl:c {:     ChannelCollection list = new ChannelCollection
                                   RESULT = list; 
                            :}
               | channelList:list SEMICOLON chanDecl:c  {: 
-                                                          if(c.getType().isBOOLEAN()){
+                                                          if(c.getType().isBoolean()){
                                                              list.addBoolChannel(c);
                                                           }
                                                           else{
-                                                              if(c.getType().isINT()){
+                                                              if(c.getType().isInt()){
                                                                   list.addIntChannel(c);
                                                               }else{
                                                                   list.addEnumChannel(c);
@@ -291,11 +291,11 @@ channelList ::= chanDecl:c {:     ChannelCollection list = new ChannelCollection
               ;
               
 chanDecl ::= CHANNEL ID:name LBRACKET INTEGER:size RBRACKET OF type:t  {:  
-                                                                           if (t.isINT()){
+                                                                           if (t.isInt()){
                                                                                RESULT = new Channel( name, size , Type.INT);
                                                                            }
                                                                            else{
-                                                                               if (t.isBOOLEAN()){
+                                                                               if (t.isBoolean()){
                                                                                    RESULT = new Channel( name, size, Type.BOOL);
                                                                                }
                                                                                else{
@@ -354,12 +354,12 @@ paramList ::= param:p {:
                 
 param ::= ID:name COLON type:t {:  Param p;
                                              
-                                   if ( t.isINT() ){
+                                   if ( t.isInt() ){
                                       p = new Param(name, Type.INT);
                                                   
                                    }
                                    else{
-                                      if ( t.isBOOLEAN() ){
+                                      if ( t.isBoolean() ){
                                           p = new Param(name, Type.BOOL);
                                       }
                                       else{
@@ -412,7 +412,7 @@ declList ::= decl:listD {:
 decl ::= varDecls:listNames COLON type:t {:  LinkedList<Var> list = new LinkedList<Var>();
                                              Var v;
                                              
-                                             if ( t.isINT() ){
+                                             if ( t.isInt() ){
                                                 
                                                  for (int i = 0; i < listNames.size(); i++){
                                                     v = new Var(listNames.get(i), Type.INT);
@@ -420,7 +420,7 @@ decl ::= varDecls:listNames COLON type:t {:  LinkedList<Var> list = new LinkedLi
                                                   }
                                               }
                                               else{
-                                                 if ( t.isBOOLEAN() ){
+                                                 if ( t.isBoolean() ){
                                                  
                                                     for (int i = 0; i < listNames.size(); i++){
                                                         v = new Var(listNames.get(i), Type.BOOL);

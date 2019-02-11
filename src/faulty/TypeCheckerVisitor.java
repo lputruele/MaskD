@@ -304,7 +304,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		if(a.isDeclaration()){
 
 			//System.out.println("DECLARATION" +a.getName() + "--- Size:" + a.getSize() + "-- Type :" + a.getType().toString() );
-			if(origT.isBOOLEAN() || origT.isINT() || origT.isEnumerated()){ // Complete declaration channel
+			if(origT.isBoolean() || origT.isInt() || origT.isEnumerated()){ // Complete declaration channel
                 
                 if(origT.isEnumerated()){ // Indicates an error
                     type = Type.ERROR;
@@ -413,7 +413,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		expr.accept(this);
 		Type exprT = this.getType();
 		
-		if( (chT.isBOOLEAN() && exprT.isBOOLEAN()) || (chT.isINT() && exprT.isINT() ) || (chT.isEnumerated() && exprT.isEnumerated()) ){
+		if( (chT.isBoolean() && exprT.isBoolean()) || (chT.isInt() && exprT.isInt() ) || (chT.isEnumerated() && exprT.isEnumerated()) ){
 			type = chT;
 		}
 	    else{
@@ -450,7 +450,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
         
 		
         
-		if( (varT.isBOOLEAN() && exprT.isBOOLEAN()) || (varT.isINT() && exprT.isINT() ) || ((varT.isEnumerated() && exprT.isEnumerated() && ( enumExp1.equals(enumExp2)) )) ){
+		if( (varT.isBoolean() && exprT.isBoolean()) || (varT.isInt() && exprT.isInt() ) || ((varT.isEnumerated() && exprT.isEnumerated() && ( enumExp1.equals(enumExp2)) )) ){
 			type = varT;
 		}
 		else{
@@ -573,7 +573,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		Type typeExp1 = this.getType();
 		a.exp2.accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isBOOLEAN() && typeExp2.isBOOLEAN() ){
+	    if(typeExp1.isBoolean() && typeExp2.isBoolean() ){
 	    	type= Type.BOOL;
 	    }
 	    else{
@@ -586,7 +586,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		Type typeExp1 = this.getType();
 		a.exp2.accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isBOOLEAN() && typeExp2.isBOOLEAN() ){
+	    if(typeExp1.isBoolean() && typeExp2.isBoolean() ){
 	    	type= Type.BOOL;
 	    }
 	    else{
@@ -600,7 +600,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		Type typeExp1 = this.getType();
 		a.exp2.accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isBOOLEAN() && typeExp2.isBOOLEAN() ){
+	    if(typeExp1.isBoolean() && typeExp2.isBoolean() ){
 	    	type= Type.BOOL;
 	    }
 	    else{
@@ -614,7 +614,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		
 		a.exp.accept(this);
 		Type typeExp = this.getType();
-	    if(typeExp.isBOOLEAN()  ){
+	    if(typeExp.isBoolean()  ){
 	    	type= Type.BOOL;
 	    }
 	    else{
@@ -625,11 +625,11 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		
 	}
 	public void visit(GreaterBoolExp a){
-		a.int1.accept(this);
+		a.getExp1().accept(this);
 		Type typeExp1 = this.getType();
-		a.int2.accept(this);
+		a.getExp2().accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isINT() && typeExp2.isINT() ){
+	    if(typeExp1.isInt() && typeExp2.isInt() ){
 	    	type= Type.BOOL;
 	    }
 	    else{
@@ -639,11 +639,11 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		
 	}
 	public void visit(LessBoolExp a){
-		a.int1.accept(this);
+		a.getExp1().accept(this);
 		Type typeExp1 = this.getType();
-		a.int2.accept(this);
+		a.getExp2().accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isINT() && typeExp2.isINT() ){
+	    if(typeExp1.isInt() && typeExp2.isInt() ){
 	    	type= Type.BOOL;
 	    }
 	    else{
@@ -653,7 +653,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 	}
 	public void visit(EqBoolExp a){
        		
-		a.int1.accept(this);
+		a.getExp1().accept(this);
 		Type typeExp1 = this.getType();
 			
         String tEnum1 = null;
@@ -662,7 +662,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
         	tEnum1 = this.currentEnumeratedType.getName();
         }
         
-		a.int2.accept(this);
+		a.getExp2().accept(this);
 		Type typeExp2 = this.getType();
         if(typeExp2.isEnumerated()){ //if is enumerated search in the first level of declarated types.
             tEnum2 = this.currentEnumeratedType.getName();
@@ -670,13 +670,13 @@ public class TypeCheckerVisitor implements FaultyVisitor{
        
         //System.out.println("operation type First Op " + typeExp1.toString() + "type second op " +  typeExp2.toString() );
 		
-	    if(typeExp1.isINT() && typeExp2.isINT() ){
+	    if(typeExp1.isInt() && typeExp2.isInt() ){
 	    	//System.out.println(" ------> INT first op" + typeExp1.toString() + "type second op " +  typeExp2.toString() );
     		
 	    	type= Type.BOOL;
 	    }
 	    else{
-	    	if(typeExp1.isBOOLEAN() && typeExp2.isBOOLEAN() ){
+	    	if(typeExp1.isBoolean() && typeExp2.isBoolean() ){
 	    		//System.out.println(" ------> BOOLEAN first op" + typeExp1.toString() + "type second op " +  typeExp2.toString() );
 	    		a.setCreateBiimp(true); //marks to create the biimplication for boolean expression 
 		    	type= Type.BOOL;
@@ -710,11 +710,11 @@ public class TypeCheckerVisitor implements FaultyVisitor{
         this.type = Type.BOOL;
 	}
 	public void visit(NegIntExp a){
-		a.exp1.accept(this);
+		a.getExp1().accept(this);
 		Type typeExp1 = this.getType();
-		a.exp2.accept(this);
+		a.getExp2().accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isINT() && typeExp2.isINT() ){
+	    if(typeExp1.isInt() && typeExp2.isInt() ){
 	    	type= Type.INT;
 	    }
 	    else{
@@ -723,11 +723,11 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 	    }
 	}
 	public void visit(SumIntExp a){
-		a.exp1.accept(this);
+		a.getExp1().accept(this);
 		Type typeExp1 = this.getType();
-		a.exp2.accept(this);
+		a.getExp2().accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isINT() && typeExp2.isINT() ){
+	    if(typeExp1.isInt() && typeExp2.isInt() ){
 	    	type= Type.INT;
 	    }
 	    else{
@@ -737,11 +737,11 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 		
 	}
 	public void visit(DivIntExp a){
-		a.exp1.accept(this);
+		a.getExp1().accept(this);
 		Type typeExp1 = this.getType();
-		a.exp2.accept(this);
+		a.getExp2().accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isINT() && typeExp2.isINT() ){
+	    if(typeExp1.isInt() && typeExp2.isInt() ){
 	    	type= Type.INT;
 	    }
 	    else{
@@ -750,11 +750,11 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 	    }
 	}
 	public void visit(MultIntExp a){
-		a.exp1.accept(this);
+		a.getExp1().accept(this);
 		Type typeExp1 = this.getType();
-		a.exp2.accept(this);
+		a.getExp2().accept(this);
 		Type typeExp2 = this.getType();
-	    if(typeExp1.isINT() && typeExp2.isINT() ){
+	    if(typeExp1.isInt() && typeExp2.isInt() ){
 	    	type= Type.INT;
 	    }
 	    else{
@@ -772,7 +772,7 @@ public class TypeCheckerVisitor implements FaultyVisitor{
 	    chan.accept(this);
 		Type chT = this.getType();
 		a.setChannel( table.searchChannel(chan.getName(), table.getLevel() ));
-		if(chT.isBOOLEAN() || chT.isINT() || chT.isEnumerated()){
+		if(chT.isBoolean() || chT.isInt() || chT.isEnumerated()){
 			this.type= chT;
 		   /* System.out.println("Chan Access - complete channel information :  TYPE : " + chT.toString());
 		    System.out.println("--------------------------------");

@@ -6,7 +6,7 @@ package faulty;
  * Class representing the multiplication of two UNSIGNED integers: int1 * int2 
  * TO BE IMPLEMENTED, DO NOT USE
  */
-public class MultIntExp extends Expression{
+public class MultIntExp extends IntExp{
 	Expression exp1; // the left int
 	Expression exp2; // the right int
    
@@ -27,6 +27,14 @@ public class MultIntExp extends Expression{
 	public void accept(FaultyVisitor v){
 	     v.visit(this);			
 	}
+
+    public Expression getExp1(){
+        return exp1;
+    }
+
+    public Expression getExp2(){
+        return exp2;
+    }
     
       
 }// end class

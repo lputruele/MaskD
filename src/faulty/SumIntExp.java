@@ -4,7 +4,7 @@ package faulty;
  * Provides the basic behavior of an expression
  * adding two integers
 */
-public class SumIntExp extends Expression{
+public class SumIntExp extends IntExp{
 	Expression exp1; // the left integer
 	Expression exp2; // the right integer
 
@@ -21,5 +21,13 @@ public class SumIntExp extends Expression{
     @Override
 	public void accept(FaultyVisitor v){
 	     v.visit(this);			
-	}    
+	}
+
+    public Expression getExp1(){
+        return exp1;
+    }
+
+    public Expression getExp2(){
+        return exp2;
+    }    
 }

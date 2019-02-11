@@ -9,8 +9,8 @@ package faulty;
 
 public class EqBoolExp extends Expression{
 
-Expression int1; // the left int
-Expression int2; // the right int
+Expression exp1; // the left int
+Expression exp2; // the right int
 boolean createBiimp; // is true in case of comparates two boolean expression,
                      // indicates to the buildervisitor if is necesary to creates a biimp for represent its.
     
@@ -24,8 +24,8 @@ String enumType; // Name of the enumerated type
  */
 public EqBoolExp(Expression int1, Expression int2){
 	super();
-    this.int1 = int1;
-    this.int2 = int2;
+    this.exp1 = int1;
+    this.exp2 = int2;
     createBiimp = false;
     isEnumerated = false;
     enumType = null;
@@ -56,12 +56,12 @@ public String getEnumType(){
     return this.enumType;
 }
 
-public Expression getInt1(){
-    return int1;
+public Expression getExp1(){
+    return exp1;
 }
 
-public Expression getInt2(){
-    return int2;
+public Expression getExp2(){
+    return exp2;
 }
     
     
