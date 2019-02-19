@@ -93,8 +93,6 @@ public class GameGraph{
 		if (to != null){
 			if (hasEdge(from, to, lbl))
 				return;
-			if (internal)
-				lbl = "$";
 			numEdges += 1;
 			succList.get(from).add(to);
 			preList.get(to).add(from);

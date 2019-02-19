@@ -98,12 +98,14 @@ public class ExplicitCompositeModel {
 		Pair transition = new Pair(from,to);
 		if (labels.get(transition) == null)
 			return false;
-		return  labels.get(transition).contains(lbl);
+		return labels.get(transition).contains(lbl);
 	}
 
 
 	public void addEdge(CompositeNode from, CompositeNode to, String lbl, Boolean faulty, Boolean internal) {
 		if (to != null){
+			if (internal && lbl != "&")
+				lbl = "&"+lbl;
 			if (hasEdge(from, to, lbl))
 				return;
 			numEdges += 1;
@@ -118,18 +120,6 @@ public class ExplicitCompositeModel {
 			labels.get(transition).add(lbl);
 			faultyActions.get(transition).add(faulty);
 			tauActions.get(transition).add(internal);
-			//check if label already added, I think this code was for when I thought this was not a multigraph
-			/*boolean addLabel = true;
-			for (String l : labels.get(transition)){
-				if (l.equals(lbl))
-					addLabel = false;
-			}
-			if (addLabel){
-				numEdges += 1;
-				labels.get(transition).add(lbl);
-				faultyActions.get(transition).add(faulty);
-				tauActions.get(transition).add(internal);
-			}*/
 		}
 	}
 
@@ -139,9 +129,6 @@ public class ExplicitCompositeModel {
 		faultyActions.get(t).remove(pos);
 		labels.get(t).remove(pos);
 		if (labels.get(t).isEmpty()){
-			/*faultyActions.put(t,null);
-			tauActions.put(t,null);
-			labels.put(t,null);*/
 			succList.get(from).remove(to);
 			preList.get(to).remove(from);
 		}
@@ -169,7 +156,7 @@ public class ExplicitCompositeModel {
 			for (CompositeNode u : succList.get(v)){
 				Pair edge = new Pair(v,u);
 				if (labels.get(edge) != null)
-					for (int i=0; i < labels.get(edge).size(); i++)			
+					for (int i=0; i < labels.get(edge).size(); i++){
 						if (faultyActions.get(edge).get(i))
 							res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [color=\"red\",label = \""+labels.get(edge).get(i)+"\"]"+";\n";
 						else
@@ -177,6 +164,7 @@ public class ExplicitCompositeModel {
 								res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [style=dashed,label = \""+labels.get(edge).get(i)+"\"]"+";\n";
 							else
 								res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+					}
 			}
 		}
 		res += "\n}";
@@ -203,7 +191,7 @@ public class ExplicitCompositeModel {
 	public void saturate(){
 		//Add tau self-loops
 		for (CompositeNode p : nodes){
-			addEdge(p,p,"$",false,true); // p -> p is internal
+			addEdge(p,p,"&",false,true); // p -> p is internal
 		}
 		if (!isWeak)
 			return;
@@ -219,11 +207,11 @@ public class ExplicitCompositeModel {
 		//Saturate graph
 		while (change){
 			change = false;
-			fsts = new LinkedList();
-			snds = new LinkedList();
-			lbls = new LinkedList();
-			isFs = new LinkedList();
-			isTaus = new LinkedList();
+			fsts = new LinkedList<CompositeNode>();
+			snds = new LinkedList<CompositeNode>();
+			lbls = new LinkedList<String>();
+			//isFs = new LinkedList<Boolean>();
+			isTaus = new LinkedList<Boolean>();
 
 			for (CompositeNode p : nodes){
 				for (CompositeNode p_ : succList.get(p)){
@@ -245,20 +233,12 @@ public class ExplicitCompositeModel {
 														if (tauActions.get(t2).get(k)){ // q_ -> q is internal
 															//add transition for later update
 															if (!hasEdge(p,q,lbl)){
-																/*boolean foundExistingTransition = false;
-																for (int h = 0; h < fsts.size(); h++){
-																	if (fsts.get(h).equals(p) && snds.get(h).equals(q) && lbls.get(h).equals(lbl) && isTaus.get(h).equals(isTau))
-																		foundExistingTransition = true;
-																}
-																if (!foundExistingTransition){*/
-																	fsts.add(p);
-																	snds.add(q);
-																	lbls.add(lbl);
-																	isTaus.add(isTau);
-																	//isFs.add(isF);
-																	change = true;
-																//}
-																
+																fsts.add(p);
+																snds.add(q);
+																lbls.add(lbl);
+																isTaus.add(isTau);
+																//isFs.add(isF);
+																change = true;		
 															}	
 														}
 													}
@@ -279,19 +259,7 @@ public class ExplicitCompositeModel {
 			}
 		}
 
-		//Remove all taus
-		/*for (CompositeNode p : nodes){
-			for (CompositeNode q : nodes){
-				Pair t = new Pair(p,q);
-				if (tauActions.get(t) != null){
-					for (int i = 0; i < tauActions.get(t).size(); i++){
-						if (tauActions.get(t).get(i)){
-							rmEdge(p,q,i);
-						}
-					}
-				}
-			}
-		}*/
+	
 	}
 	
 }

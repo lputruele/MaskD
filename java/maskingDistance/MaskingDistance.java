@@ -53,8 +53,6 @@ public class MaskingDistance{
             		if (imp.getLabels().get(p) != null){
             			for (int i=0; i < imp.getLabels().get(p).size(); i++){
             				String lbl = imp.getLabels().get(p).get(i);
-            				if (imp.getTauActions().get(p) != null && imp.getTauActions().get(p).get(i))
-            					lbl = "$";
             				GameNode curr_ = new GameNode(curr.getSpecState(),succ,lbl, "V");
 		            		GameNode toOld = g.search(curr_);
 		            		boolean f = imp.getFaultyActions().get(p).get(i);
@@ -96,14 +94,14 @@ public class MaskingDistance{
 		            	Pair p = new Pair(curr.getSpecState(),succ);
 		            	if (spec.getLabels().get(p) != null){
 	            			for (int i=0; i < spec.getLabels().get(p).size(); i++){
-	            				String lbl = spec.getLabels().get(p).get(i);
-	            				if (spec.getTauActions().get(p) != null && spec.getTauActions().get(p).get(i))
-	            					lbl = "$";
-	            				if (curr.getSymbol().equals(spec.getLabels().get(p).get(i))){
+	            				String lblImp = curr.getSymbol();
+	            				String lblSpec = spec.getLabels().get(p).get(i);
+	            				if (lblImp.equals(lblSpec) || (lblImp.charAt(0)=='&' && lblSpec.charAt(0)=='&')){
 				            		GameNode curr_ = new GameNode(succ,curr.getImpState(),"", "R");
 				            		GameNode toOld = g.search(curr_);
 				            		boolean f = spec.getFaultyActions().get(p).get(i);
 		            				boolean isTau = spec.getTauActions().get(p).get(i);
+		            				String lbl = lblSpec;
 				                    if (toOld == null){
 					            		g.addNode(curr_);
 					            		g.addEdge(curr,curr_,lbl, f, isTau); //add label may not be necessary
@@ -270,12 +268,15 @@ public class MaskingDistance{
 	}
 
 	public void simulateGame(){
-		GameNode curr = g.getInitial();
+		GameNode curr;
+		Stack<GameNode> track = new Stack<GameNode>();
+		track.push(g.getInitial());
 		Scanner sc = new Scanner(System.in);
 		String c = "";
 		System.out.println("\n·····SIMULATION·····\n");
 		while (!c.equals("X") && !c.equals("x")){
-			System.out.println("CURRENT STATE: ["+curr+"] , choose an action... (action : [nextstate])");
+			curr = track.peek();
+			System.out.println("\n\nCURRENT STATE: ["+curr+"]\nChoose an action... (action : [nextstate])\n");
 			Integer i = 0;
 			for (GameNode succ : g.getSuccessors(curr)){
 				Pair p = new Pair(curr,succ);
@@ -286,6 +287,9 @@ public class MaskingDistance{
 					}
 				}
 			}
+			if (track.size()>1){
+				System.out.println("Z. BACKTRACK");
+			}
 			System.out.println("X. EXIT");
 			c = sc.next();
 
@@ -295,16 +299,16 @@ public class MaskingDistance{
 				if (g.getLabels().get(p) != null){
 	            	for (int j=0; j < g.getLabels().get(p).size(); j++){
 						if (c.equals(i.toString()))
-							curr = succ;
+							track.push(succ);
 						i++;
 					}
 				}
 			}
-			/*for (GameNode succ : g.getSuccessors(curr)){
-				if (c.equals(i.toString()))
-					curr = succ;
-				i++;
-			}*/
+
+			if (c.equals("Z") || c.equals("z")){
+				if (track.size()>1)
+				track.pop();
+			}
 		}
 	}
 }
