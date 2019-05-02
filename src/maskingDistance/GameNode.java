@@ -128,7 +128,7 @@ public class GameNode implements Comparable{
 			if (n.isErrState()){
 				return false;
 			}
-			return specState == n.getSpecState() && impState == n.getImpState() && symbol.equals(n.getSymbol()) && player.equals(n.getPlayer()) && mask == n.getMask();
+			return specState == n.getSpecState() && impState == n.getImpState() && symbol.equals(n.getSymbol()) && player.equals(n.getPlayer());
 		}
 		return false;
 	}

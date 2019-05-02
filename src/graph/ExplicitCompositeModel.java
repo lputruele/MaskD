@@ -104,7 +104,7 @@ public class ExplicitCompositeModel {
 
 	public void addEdge(CompositeNode from, CompositeNode to, String lbl, Boolean faulty, Boolean internal) {
 		if (to != null){
-			if (internal && lbl != "&")
+			if (internal && !lbl.equals("&"))
 				lbl = "&"+lbl;
 			if (hasEdge(from, to, lbl))
 				return;
@@ -255,6 +255,7 @@ public class ExplicitCompositeModel {
 
 			//update transition system
 			for (int i = 0; i < fsts.size(); i++){
+				//System.out.println(fsts.get(i) + "\n" + snds.get(i) + "\n" + lbls.get(i)+ "\n" + isTaus.get(i) + "\n=========================\n");
 				addEdge(fsts.get(i), snds.get(i), lbls.get(i), false, isTaus.get(i));
 			}
 		}

@@ -362,10 +362,68 @@ public class CompositeNode implements Comparable{
 		return false;
 	}
 
+	/*public CompositeNode createSuccessor(LinkedList<Code> assigns, int procIndex){
+		CompositeNode succ = clone();
+		for (Code c : assigns){
+			if (c instanceof VarAssign){
+				VarAssign assign = (VarAssign)c;
+				Var var = instanciateIfParam(assign.getVar(),procIndex);
+				String name = var.getName();
+				Boolean value = evalBoolExpr(assign.getExp(),procIndex);
+				if (checkGlobalVar(var))
+					succ.getState().put(name,value);
+				else
+					succ.getState().put(model.getProcDecls().get(procIndex)+name,value);
+			}
+		}
+		return succ;
+	}
+
+	public void update(LinkedList<Code> assigns, int procIndex){
+		for (Code c : assigns){
+			if (c instanceof VarAssign){
+				VarAssign assign = (VarAssign)c;
+				Var var = instanciateIfParam(assign.getVar(),procIndex);
+				String name = var.getName();
+				Boolean value = evalBoolExpr(assign.getExp(),procIndex);
+				if (checkGlobalVar(var))
+					this.getState().put(name,value);
+				else
+					this.getState().put(model.getProcDecls().get(procIndex)+name,value);
+			}
+		}
+	}*/
+
 	public CompositeNode createSuccessor(LinkedList<Code> assigns, int procIndex){
 		CompositeNode succ = clone();
 		for (Code c : assigns){
-			succ.updateSingleVar(c,procIndex);
+			if (c instanceof VarAssign){
+				VarAssign assign = (VarAssign)c;
+				Var var = instanciateIfParam(assign.getVar(),procIndex);
+				String name = var.getName();
+				if (var.getType().isBoolean()){
+					Boolean value = evalBoolExpr(assign.getExp(),procIndex);
+					if (checkGlobalVar(var))
+						succ.getState().put(name,value);
+					else
+						succ.getState().put(model.getProcDecls().get(procIndex)+name,value);
+				}
+				if (var.getType().isInt()){
+					Integer value = evalIntExpr(assign.getExp(),procIndex);
+					if (checkGlobalVar(var))
+						succ.getStateInts().put(name,value);
+					else
+						succ.getStateInts().put(model.getProcDecls().get(procIndex)+name,value);
+				}
+				if (var.getType().isEnumerated()){
+					Var exp = (Var) assign.getExp();
+					String value = exp.getName();
+					if (checkGlobalVar(var))
+						succ.getStateEnums().put(name,value);
+					else
+						succ.getStateEnums().put(model.getProcDecls().get(procIndex)+name,value);
+				}			
+			}
 		}
 		return succ;
 	}
@@ -377,12 +435,10 @@ public class CompositeNode implements Comparable{
 	}
 
 	private void updateSingleVar(Code c, int procIndex){
-		//boolean isEnumAssign;
 		if (c instanceof VarAssign){
 			VarAssign assign = (VarAssign)c;
 			Var var = instanciateIfParam(assign.getVar(),procIndex);
 			String name = var.getName();
-			//isEnumAssign = false;
 			if (var.getType().isBoolean()){
 				Boolean value = evalBoolExpr(assign.getExp(),procIndex);
 				if (checkGlobalVar(var))
@@ -405,26 +461,7 @@ public class CompositeNode implements Comparable{
 				else
 					this.getStateEnums().put(model.getProcDecls().get(procIndex)+name,value);
 			}
-			//enum assign treatment
-			/*if (assign.getExp() instanceof Var){
-				Var exp = (Var) assign.getExp();
-				if (exp.hasEnumType()){
-					isEnumAssign = true;
-					String value = exp.getName();
-					if (checkGlobalVar(var))
-						this.getStateEnums().put(name,value);
-					else
-						this.getStateEnums().put(model.getProcDecls().get(procIndex)+name,value);
-				}
-			}
-			//boolean assign treatment
-			if (!isEnumAssign){
-				Boolean value = evalBoolExpr(assign.getExp(),procIndex);
-				if (checkGlobalVar(var))
-					this.getState().put(name,value);
-				else
-					this.getState().put(model.getProcDecls().get(procIndex)+name,value);
-			}*/
+			
 		}
 	}
 
