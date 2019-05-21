@@ -7,9 +7,7 @@ import java.io.*;
 public class ExplicitCompositeModel {
 	private HashMap<CompositeNode, TreeSet<CompositeNode>> succList; // Succesors adjacency list
 	private HashMap<CompositeNode, TreeSet<CompositeNode>> preList; // Predecessors adjacency list
-	private HashMap<Pair, LinkedList<String>> labels; // Edge labels
-	private HashMap<Pair, LinkedList<Boolean>> faultyActions; // Faulty transitions
-	private HashMap<Pair, LinkedList<Boolean>> tauActions; // Internal transitions
+	private HashMap<Pair, LinkedList<Action>> actions; // Edge actions
 	private CompositeNode initial; // Initial State
 	private LinkedList<Var> sharedVars; // Global variables
 	private LinkedList<CompositeNode> nodes; // Global states
@@ -18,21 +16,21 @@ public class ExplicitCompositeModel {
 	private LinkedList<Proc> procs;
 	private LinkedList<String> procDecls;
 	private boolean isWeak;
+	private boolean isSpec;
 
-	public ExplicitCompositeModel(GlobalVarCollection svs) {
+	public ExplicitCompositeModel(GlobalVarCollection svs, boolean isS) {
 		sharedVars = svs.getBoolVars();
 		sharedVars.addAll(svs.getEnumVars());
 		sharedVars.addAll(svs.getIntVars());
 		succList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
 		preList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
-		labels = new HashMap<Pair, LinkedList<String>>();
-		faultyActions = new HashMap<Pair, LinkedList<Boolean>>();
-		tauActions = new HashMap<Pair, LinkedList<Boolean>>();
+		actions = new HashMap<Pair, LinkedList<Action>>();
 		numNodes = numEdges = 0;
 		nodes = new LinkedList<CompositeNode>();
 		procs = new LinkedList<Proc>();
 		procDecls = new LinkedList<String>();
 		isWeak = false;
+		isSpec = isS;
 	}
 
 	public void setInitial(CompositeNode v){
@@ -51,16 +49,8 @@ public class ExplicitCompositeModel {
 		return sharedVars;
 	}
 
-	public HashMap<Pair, LinkedList<String>> getLabels(){
-		return labels;
-	}
-
-	public HashMap<Pair, LinkedList<Boolean>> getFaultyActions(){
-		return faultyActions;
-	}
-
-	public HashMap<Pair, LinkedList<Boolean>> getTauActions(){
-		return tauActions;
+	public HashMap<Pair, LinkedList<Action>> getActions(){
+		return actions;
 	}
 
 	public LinkedList<Proc> getProcs(){
@@ -91,49 +81,45 @@ public class ExplicitCompositeModel {
 	}
 
 
-	public boolean hasEdge(CompositeNode from, CompositeNode to, String lbl) {
+	public boolean hasEdge(CompositeNode from, CompositeNode to, Action a) {
 
 		if (!hasNode(from) || !hasNode(to))
 			return false;
 		Pair transition = new Pair(from,to);
-		if (labels.get(transition) == null)
+		if (actions.get(transition) == null)
 			return false;
-		return labels.get(transition).contains(lbl);
+		return actions.get(transition).contains(a);
 	}
 
 
-	public void addEdge(CompositeNode from, CompositeNode to, String lbl, Boolean faulty, Boolean internal) {
+	public void addEdge(CompositeNode from, CompositeNode to, Action a) {
 		if (to != null){
-			if (internal && !lbl.equals("&"))
-				lbl = "&"+lbl;
-			if (hasEdge(from, to, lbl))
+			if (a.isTau() && !a.getLabel().equals("&"))
+				a.setLabel("&"+a.getLabel());
+			if (hasEdge(from, to, a))
 				return;
 			numEdges += 1;
 			succList.get(from).add(to);
 			preList.get(to).add(from);
 			Pair transition = new Pair(from,to);
-			if (labels.get(transition) == null){
-				labels.put(transition,new LinkedList<String>());
-				faultyActions.put(transition,new LinkedList<Boolean>());
-				tauActions.put(transition,new LinkedList<Boolean>());
+			if (actions.get(transition) == null){
+				actions.put(transition,new LinkedList<Action>());
 			}
-			labels.get(transition).add(lbl);
-			faultyActions.get(transition).add(faulty);
-			tauActions.get(transition).add(internal);
+			actions.get(transition).add(a);
 		}
 	}
 
-	public void rmEdge(CompositeNode from, CompositeNode to, int pos) {
+	/*public void rmEdge(CompositeNode from, CompositeNode to, int pos) {
 		Pair t = new Pair(from,to);
 		tauActions.get(t).remove(pos);
 		faultyActions.get(t).remove(pos);
-		labels.get(t).remove(pos);
-		if (labels.get(t).isEmpty()){
+		actions.get(t).remove(pos);
+		if (actions.get(t).isEmpty()){
 			succList.get(from).remove(to);
 			preList.get(to).remove(from);
 		}
 
-	}
+	}*/
 
 
 	public LinkedList<CompositeNode> getNodes(){
@@ -151,19 +137,19 @@ public class ExplicitCompositeModel {
 	public String createDot(boolean isImp){
 		String res = "digraph model {\n\n";
 		for (CompositeNode v : nodes){
-			if (v.getIsFaulty())
-				res += "    STATE"+v.toStringDot()+" [color=\"red\"];\n";
+			//if (v.getIsFaulty())
+			//	res += "    STATE"+v.toStringDot()+" [color=\"red\"];\n";
 			for (CompositeNode u : succList.get(v)){
 				Pair edge = new Pair(v,u);
-				if (labels.get(edge) != null)
-					for (int i=0; i < labels.get(edge).size(); i++){
-						if (faultyActions.get(edge).get(i))
-							res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [color=\"red\",label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+				if (actions.get(edge) != null)
+					for (int i=0; i < actions.get(edge).size(); i++){
+						if (actions.get(edge).get(i).isFaulty())
+							res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [color=\"red\",label = \""+actions.get(edge).get(i).getLabel()+"\"]"+";\n";
 						else
-							if (tauActions.get(edge).get(i))
-								res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [style=dashed,label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+							if (actions.get(edge).get(i).isTau())
+								res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [style=dashed,label = \""+actions.get(edge).get(i).getLabel()+"\"]"+";\n";
 							else
-								res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+								res += "    STATE"+v.toStringDot()+" -> STATE"+ u.toStringDot() +" [label = \""+actions.get(edge).get(i).getLabel()+"\"]"+";\n";
 					}
 			}
 		}
@@ -191,7 +177,7 @@ public class ExplicitCompositeModel {
 	public void saturate(){
 		//Add tau self-loops
 		for (CompositeNode p : nodes){
-			addEdge(p,p,"&",false,true); // p -> p is internal
+			addEdge(p,p,new Action("&",false,true,isSpec)); // p -> p is internal
 		}
 		if (!isWeak)
 			return;
@@ -216,23 +202,23 @@ public class ExplicitCompositeModel {
 			for (CompositeNode p : nodes){
 				for (CompositeNode p_ : succList.get(p)){
 					Pair t0 = new Pair(p,p_);
-					if (tauActions.get(t0) != null){
-						for (int i = 0; i < tauActions.get(t0).size(); i++){
-							if (tauActions.get(t0).get(i)){ // p -> p_ is internal
+					if (actions.get(t0) != null){
+						for (int i = 0; i < actions.get(t0).size(); i++){
+							if (actions.get(t0).get(i).isTau()){ // p -> p_ is internal
 								for (CompositeNode q_ : succList.get(p_)){
 									Pair t1 = new Pair(p_,q_);
-									for (int j = 0; j < labels.get(t1).size(); j++){
-										String lbl = labels.get(t1).get(j);
-										Boolean isF = faultyActions.get(t1).get(j);
-										Boolean isTau = tauActions.get(t1).get(j);
+									for (int j = 0; j < actions.get(t1).size(); j++){
+										String lbl = actions.get(t1).get(j).getLabel();
+										Boolean isF = actions.get(t1).get(j).isFaulty();
+										Boolean isTau = actions.get(t1).get(j).isTau();
 										if (!isF){ //don't saturate faulty actions
 											for (CompositeNode q : succList.get(q_)){
 												Pair t2 = new Pair(q_,q);
-												if (tauActions.get(t2) != null){
-													for (int k = 0; k < tauActions.get(t2).size(); k++){
-														if (tauActions.get(t2).get(k)){ // q_ -> q is internal
+												if (actions.get(t2) != null){
+													for (int k = 0; k < actions.get(t2).size(); k++){
+														if (actions.get(t2).get(k).isTau()){ // q_ -> q is internal
 															//add transition for later update
-															if (!hasEdge(p,q,lbl)){
+															if (!hasEdge(p,q,actions.get(t1).get(j))){
 																fsts.add(p);
 																snds.add(q);
 																lbls.add(lbl);
@@ -256,7 +242,7 @@ public class ExplicitCompositeModel {
 			//update transition system
 			for (int i = 0; i < fsts.size(); i++){
 				//System.out.println(fsts.get(i) + "\n" + snds.get(i) + "\n" + lbls.get(i)+ "\n" + isTaus.get(i) + "\n=========================\n");
-				addEdge(fsts.get(i), snds.get(i), lbls.get(i), false, isTaus.get(i));
+				addEdge(fsts.get(i), snds.get(i), new Action(lbls.get(i), false, isTaus.get(i), isSpec));
 			}
 		}
 

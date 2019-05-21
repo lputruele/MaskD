@@ -8,6 +8,7 @@ import faulty.*;
 public class MaskingDistance{
 
 	private GameGraph g; // The masking distance game graph, undefined until buildGraph is called
+    private boolean bisim = true;
 
 	public MaskingDistance(){
 
@@ -23,8 +24,8 @@ public class MaskingDistance{
 		//and the verifier plays with the specification(spec), he tries to match the action played by the refuter, if he can't then an error state is reached.
 		ExplicitCompositeModel spec,imp;
 		System.out.println("Building Models...");
-		spec = specProgram.toGraph();
-		imp = impProgram.toGraph();
+		spec = specProgram.toGraph(true);
+		imp = impProgram.toGraph(false);
 		System.out.println("Saturating Models...");
 		spec.saturate();
 		imp.saturate();
@@ -34,7 +35,7 @@ public class MaskingDistance{
 		g = new GameGraph();
 
         //calculate initial state
-        GameNode init = new GameNode(spec.getInitial(), imp.getInitial(), "","R");
+        GameNode init = new GameNode(spec.getInitial(), imp.getInitial(),new Action("", false, false, false) ,"R");
         g.addNode(init);
         g.setInitial(init);
 
@@ -45,272 +46,239 @@ public class MaskingDistance{
         while(!iterSet.isEmpty()){
             GameNode curr = iterSet.pollFirst();
             if (deadlockIsError && imp.getSuccessors(curr.getImpState()).size() == 1){ // this is a special deadlock case
-            		g.addEdge(curr,g.getErrState(),"ERR", false, false);
+            		g.addEdge(curr,g.getErrState(),new Action("ERR", false, false, false));
             }
             if (curr.getPlayer() == "R"){ //if player is refuter we add its possible moves from current state
+                //IMP MOVES
             	for (CompositeNode succ : imp.getSuccessors(curr.getImpState())){
             		Pair p = new Pair(curr.getImpState(),succ);
-            		if (imp.getLabels().get(p) != null){
-            			for (int i=0; i < imp.getLabels().get(p).size(); i++){
-            				String lbl = imp.getLabels().get(p).get(i);
-            				GameNode curr_ = new GameNode(curr.getSpecState(),succ,lbl, "V");
-		            		GameNode toOld = g.search(curr_);
-		            		boolean f = imp.getFaultyActions().get(p).get(i);
-		            		boolean isTau = imp.getTauActions().get(p).get(i);
+            		if (imp.getActions().get(p) != null){
+            			for (int i=0; i < imp.getActions().get(p).size(); i++){
+                            GameNode curr_ = new GameNode(curr.getSpecState(),succ,imp.getActions().get(p).get(i), "V");
+                            GameNode toOld = g.search(curr_);
 		                    if (toOld == null){
 			            		g.addNode(curr_);
-			            		if (f)
-			            			curr_.setMask(true);
-			            		g.addEdge(curr,curr_,curr_.getSymbol(), f, isTau); 
+			            		if (curr_.getSymbol().isFaulty())
+			            			curr_.setMask(true); //ahora quedo medio irrelevante el mask
+			            		g.addEdge(curr,curr_, curr_.getSymbol()); 
 			            		iterSet.add(curr_);
 			            	}
 			            	else{
-			            		g.addEdge(curr,toOld,toOld.getSymbol(), f, isTau);
+			            		g.addEdge(curr,toOld, toOld.getSymbol());
 			            	}
             			}
             		}
             	}
+                //SPEC MOVES
+                if (bisim){
+                    for (CompositeNode succ : spec.getSuccessors(curr.getSpecState())){
+                        Pair p = new Pair(curr.getSpecState(),succ);
+                        if (spec.getActions().get(p) != null){
+                            for (int i=0; i < spec.getActions().get(p).size(); i++){
+                                GameNode curr_ = new GameNode(succ,curr.getImpState(),spec.getActions().get(p).get(i), "V");
+                                GameNode toOld = g.search(curr_);
+                                if (toOld == null){
+                                    g.addNode(curr_);
+                                    g.addEdge(curr,curr_, curr_.getSymbol()); 
+                                    iterSet.add(curr_);
+                                }
+                                else{
+                                    g.addEdge(curr,toOld,toOld.getSymbol()); 
+                                }
+                            }
+                        }
+                    }
+                }
             }
             else{ //if player is verifier we add its matching move from current state or err transition if can't match
             	/*if (spec.getSuccessors(curr.getSpecState()).size() == 1 && spec.getSuccessors(curr.getSpecState()).first() == curr.getSpecState()
             		&& curr.getSpecState().getIsFaulty()){
             		g.addEdge(curr,g.getErrState(),"ERR", false);
             	}*/
-            	if (curr.getMask()){ //this means the state has to mask a previous fault
-            		GameNode curr_ = new GameNode(curr.getSpecState(),curr.getImpState(),"", "R");
-            		GameNode toOld = g.search(curr_);
-                    if (toOld == null){
-	            		g.addNode(curr_);
-	            		g.addEdge(curr,curr_,"M"+curr.getSymbol(), false, false); //add label may not be necessary
-	            		iterSet.add(curr_);
-	            	}
-	            	else{
-	            		g.addEdge(curr,toOld,"M"+curr.getSymbol(), false, false);
-	            	}
-	            }
-	            else{
-	            	boolean foundSucc = false;
-	            	for (CompositeNode succ : spec.getSuccessors(curr.getSpecState())){
-		            	Pair p = new Pair(curr.getSpecState(),succ);
-		            	if (spec.getLabels().get(p) != null){
-	            			for (int i=0; i < spec.getLabels().get(p).size(); i++){
-	            				String lblImp = curr.getSymbol();
-	            				String lblSpec = spec.getLabels().get(p).get(i);
-	            				if (lblImp.equals(lblSpec) || (lblImp.charAt(0)=='&' && lblSpec.charAt(0)=='&')){
-				            		GameNode curr_ = new GameNode(succ,curr.getImpState(),"", "R");
-				            		GameNode toOld = g.search(curr_);
-				            		boolean f = spec.getFaultyActions().get(p).get(i);
-		            				boolean isTau = spec.getTauActions().get(p).get(i);
-		            				String lbl = lblSpec;
-				                    if (toOld == null){
-					            		g.addNode(curr_);
-					            		g.addEdge(curr,curr_,lbl, f, isTau); //add label may not be necessary
-					            		iterSet.add(curr_);
-					            	}
-					            	else{
-					            		g.addEdge(curr,toOld,lbl, f, isTau);
-					            	}
-					            	foundSucc = true;
-					            	break;
-					            }
-	            			}
-		            	}
-	            	}
-	            	if (!foundSucc){
-	        			g.addEdge(curr,g.getErrState(),"ERR", false, false);
-	            	}
-	            }
+            	boolean foundSucc = false;
+                //SPEC MOVES
+                if (!curr.getSymbol().isFromSpec()){
+                    if (curr.getMask()){ //this means the state has to mask a previous fault
+                        GameNode curr_ = new GameNode(curr.getSpecState(),curr.getImpState(),new Action("",false,false,false), "R");
+                        GameNode toOld = g.search(curr_);
+                        if (toOld == null){
+                            g.addNode(curr_);
+                            g.addEdge(curr,curr_,new Action("M"+curr.getSymbol().getLabel(),false,false,true,true));
+                            iterSet.add(curr_);
+                        }
+                        else{
+                            g.addEdge(curr,toOld,new Action("M"+curr.getSymbol().getLabel(),false,false,true,true));
+                        }
+                        foundSucc = true;
+                    }
+                    else{
+    	            	for (CompositeNode succ : spec.getSuccessors(curr.getSpecState())){
+    		            	Pair p = new Pair(curr.getSpecState(),succ);
+    		            	if (spec.getActions().get(p) != null){
+    	            			for (int i=0; i < spec.getActions().get(p).size(); i++){
+    	            				Action lblImp = curr.getSymbol();
+    	            				Action lblSpec = spec.getActions().get(p).get(i);
+    	            				if (lblImp.getLabel().equals(lblSpec.getLabel()) || (lblImp.isTau() && lblSpec.isTau())){
+    				            		GameNode curr_ = new GameNode(succ,curr.getImpState(), new Action("",false,false,false), "R");
+    				            		GameNode toOld = g.search(curr_);
+    				                    if (toOld == null){
+    					            		g.addNode(curr_);
+    					            		g.addEdge(curr,curr_, lblSpec); //add label may not be necessary
+    					            		iterSet.add(curr_);
+    					            	}
+    					            	else{
+    					            		g.addEdge(curr,toOld, lblSpec);
+    					            	}
+    					            	foundSucc = true;
+    					            	break;
+    					            }
+    	            			}
+    		            	}
+    	            	}
+                    }
+                }
+                else{//IMP MOVES
+                    if (bisim){
+                        for (CompositeNode succ : imp.getSuccessors(curr.getImpState())){
+                            Pair p = new Pair(curr.getImpState(),succ);
+                            if (imp.getActions().get(p) != null){
+                                for (int i=0; i < imp.getActions().get(p).size(); i++){
+                                    Action lblSpec = curr.getSymbol();
+                                    Action lblImp = imp.getActions().get(p).get(i);
+                                    if (lblImp.getLabel().equals(lblSpec.getLabel()) || (lblImp.isTau() && lblSpec.isTau())){
+                                        GameNode curr_ = new GameNode(curr.getSpecState(),succ, new Action("",false,false,false), "R");
+                                        GameNode toOld = g.search(curr_);
+                                        if (toOld == null){
+                                            g.addNode(curr_);
+                                            g.addEdge(curr,curr_, lblImp); //add label may not be necessary
+                                            iterSet.add(curr_);
+                                        }
+                                        else{
+                                            g.addEdge(curr,toOld, lblImp);
+                                        }
+                                        foundSucc = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            	if (!foundSucc){
+        			g.addEdge(curr,g.getErrState(),new Action("ERR", false, false, false));
+            	}
             }
         }
         //System.out.println(g.createDot());
 	}
 
-	/*public void buildGraphOptimized(Program specProgram, Program impProgram){
-		//This method builds a game graph for the Masking Distance Game, there are two players: the Refuter(R) and the Verifier(V)
-		//The refuter plays with the implementation(imp), this means choosing any action available (faulty or not)
-		//and the verifier plays with the specification(spec), he tries to match the action played by the refuter, if he can't then an error state is reached.
-		//This version has some optimizations, namely: Got rid of M transitions
-		ExplicitCompositeModel spec,imp;
-		spec = specProgram.toGraph();
-		imp = impProgram.toGraph();
+	
 
-		g = new GameGraph();
-
-        //calculate initial state
-        GameNode init = new GameNode(spec.getInitial(), imp.getInitial(), "","R");
-        g.addNode(init);
-        g.setInitial(init);
-
-        TreeSet<GameNode> iterSet = new TreeSet<GameNode>();
-        iterSet.add(g.getInitial());
-
-        //build the game graph
-        while(!iterSet.isEmpty()){
-            GameNode curr = iterSet.pollFirst();
-            if (curr.getPlayer() == "R"){ //if player is refuter we add its possible moves from current state
-            	for (CompositeNode succ : imp.getSuccessors(curr.getImpState())){
-            		Pair p = new Pair(curr.getImpState(),succ);
-            		if (imp.getLabels().get(p) != null){
-            			for (int i=0; i < imp.getLabels().get(p).size(); i++){
-            				boolean f = imp.getFaultyActions().get(p).get(i);
-		            		GameNode curr_;
-		            		if (f)
-		            			curr_ = new GameNode(curr.getSpecState(),succ,"", "R");
-		            		else
-		            			curr_ = new GameNode(curr.getSpecState(),succ,imp.getLabels().get(p).get(i), "V");
-		            		GameNode toOld = g.search(curr_);
-		                    if (toOld == null){
-			            		g.addNode(curr_);
-			            		g.addEdge(curr,curr_,imp.getLabels().get(p).get(i), f); 
-			            		iterSet.add(curr_);
-			            	}
-			            	else{
-			            		g.addEdge(curr,toOld,imp.getLabels().get(p).get(i), f);
-			            	}
-            			}
-            		}
-            	}
-            }
-            else{ //if player is verifier we add its matching move from current state or err transition if can't match
-	            	boolean foundSucc = false;
-	            	for (CompositeNode succ : spec.getSuccessors(curr.getSpecState())){
-		            	Pair p = new Pair(curr.getSpecState(),succ);
-		            	if (imp.getLabels().get(p) != null){
-	            			for (int i=0; i < imp.getLabels().get(p).size(); i++){
-	            				if (curr.getSymbol().equals(spec.getLabels().get(p).get(i))){
-				            		GameNode curr_ = new GameNode(succ,curr.getImpState(),"", "R");
-				            		GameNode toOld = g.search(curr_);
-				                    if (toOld == null){
-					            		g.addNode(curr_);
-					            		g.addEdge(curr,curr_,spec.getLabels().get(p).get(i), spec.getFaultyActions().get(p).get(i)); //add label may not be necessary
-					            		iterSet.add(curr_);
-					            	}
-					            	else{
-					            		g.addEdge(curr,toOld,spec.getLabels().get(p).get(i), spec.getFaultyActions().get(p).get(i));
-					            	}
-					            	foundSucc = true;
-					            	break;
-					            }
-	            			}
-	            		}
-	            	}
-	            	if (!foundSucc){
-			            g.addEdge(curr,g.getErrState(),"ERR", false);
-	            	}
-	            
-            }
-        }
-        //System.out.println(g.createDot());
-	}*/
-
-	public double calculateDistance2(Program specProgram, Program impProgram, boolean deadlockIsError){
+	public double calculateDistance(Program specProgram, Program impProgram, boolean deadlockIsError){
 		int faultsMasked = Integer.MAX_VALUE;
+        boolean found = false;
     	buildGraph(specProgram, impProgram, deadlockIsError);
     	System.out.println("Calculating Distance...");
-
     	DynamicMatrix2D<TreeSet<GameNode>> uSets = new DynamicMatrix2D<TreeSet<GameNode>>(); //dynamic programming matrix
     	TreeSet<GameNode> initialSet = new TreeSet<GameNode>();
+
+        //BASE CASES
+        for (int i = 0; i < uSets.getRowLength(); i++){
+            uSets.set(0,i, new TreeSet<GameNode>());
+            uSets.set(i,0, new TreeSet<GameNode>());
+        }
     	initialSet.add(g.getErrState());
     	uSets.set(1,1,initialSet); // base case: 1,1 has error State set
-    	for (int i = 1; i < uSets.getRowLength()-1; i++){
-    		for (int j = 1; j < uSets.getColLength()-1; j++){
-    			TreeSet<GameNode> currSet = uSets.get(i,j);
-    			TreeSet<GameNode> newSet = new TreeSet<GameNode>();
-    			TreeSet<GameNode> newSetF = new TreeSet<GameNode>();
-    			if (currSet != null){
-    				for (GameNode gn : currSet){
-    					//System.out.println(gn);
-    					if (gn == g.getInitial() && i < faultsMasked)
-    						faultsMasked = i;
-    					if (gn.getPlayer().equals("R") || gn.isErrState()){
-    						for (GameNode gnPre : g.getPredecessors(gn)){ //for each predecessor V see if all its successors are in some previously computed set
-    							//boolean found = false;
-    							if (gnPre.getMask()){ //a fault occurred
-    								int founds = 0;
-    								for (GameNode gnPreSucc : g.getSuccessors(gnPre)){
-    									boolean found = false;
-    									for (int k = i; k > 0 && !found; k--){
-		    								for (int l = j; l > 0 && !found; l--){
-		    									if (uSets.get(k,l)!= null){
-	    											if (uSets.get(k,l).contains(gnPreSucc)){
-			    										founds++;
-			    										found = true;
-	    											}
-		    									}
-		    								}
-		    							}
-    								}
-    								if (founds == g.getSuccessors(gnPre).size()){
-    									if (gnPre == g.getInitial() && i < faultsMasked)
-    										faultsMasked = i;
-    									System.out.println("añado Rs");
-		    							newSetF.add(gnPre);
-		    						}
-    								/*for (int k = i; k > 0 && !found; k--){
-	    								for (int l = j; l > 0 && !found; l--){
-	    									if (uSets.get(k,l)!= null){
-	    										for (GameNode gnPreSucc : g.getSuccessors(gnPre)){
-	    											if (uSets.get(k,l).contains(gnPreSucc)){
-			    										newSetF.add(gnPre);
-			    										found = true;
-	    											}
-	    										}
-	    									}
-	    								}
-	    							}*/
-    							}
-    							else{ //a fault didnt occur
-    								int founds = 0;
-    								for (GameNode gnPreSucc : g.getSuccessors(gnPre)){
-    									boolean found = false;
-	    								for (int l = j; l > 0 && !found; l--){
-	    									if (uSets.get(i,l)!= null){
-    											if (uSets.get(i,l).contains(gnPreSucc)){
-		    										founds++;
-		    										found = true;
-    											}
-	    									}
-	    								}
-    								}
-    								if (founds == g.getSuccessors(gnPre).size()){
-    									if (gnPre == g.getInitial() && i < faultsMasked)
-    										faultsMasked = i;
-    									System.out.println("añado R2s");
-		    							newSet.add(gnPre);
-		    						}
-    							}
-    							
-	    					}
-    					}
-    					else{ //V
-    						System.out.println("añado Vs");
-    						newSet.addAll(g.getPredecessors(gn));
-    					}
-    				}
-    				/*if (newSet.contains(g.getInitial()))
-    					faultsMasked = i;
-    				if (newSetF.contains(g.getInitial()))
-    					faultsMasked = i+1;*/
-    				if (!newSet.isEmpty()){
-    					uSets.set(i,j+1,newSet); //case 1
-    					if (newSet.contains(g.getInitial()) && i < faultsMasked)
-    						faultsMasked = i;
-    				}
-    				else{
-    					if (!newSetF.isEmpty()){
-    						uSets.set(i+1,j+1,newSetF); //case 2
-    						if (newSetF.contains(g.getInitial()) && i+1 < faultsMasked)
-    							faultsMasked = i+1;
-    					}
-    				}	
-    			}
-    		}
-    	}
+
+        //INDUCTIVE CASE
+        //while (!found){
+        	for (int j = 1; j < uSets.getColLength() && !found; j++){ //estos ciclos estan mal
+        		for (int i = 1; i < uSets.getRowLength() && !found; i++){
+                    if (uSets.get(i,j) == null){
+            			TreeSet<GameNode> currSet = uSets.get(i,j-1);
+            			TreeSet<GameNode> newSet = new TreeSet<GameNode>();
+            			//TreeSet<GameNode> newSetF = new TreeSet<GameNode>();
+            			if (currSet != null){
+                        //System.out.println(uSets.get(i,j));
+            				for (GameNode gn : currSet){
+            					//if (gn == g.getInitial() && i < faultsMasked)
+            					//	faultsMasked = i;
+                                if (gn.getPlayer().equals("V")){
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        newSet.add(gnPre);
+                                    }
+                                }
+                                else{ //V
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        boolean doAdd = true;
+                                        for (GameNode gnPrePos : g.getSuccessors(gnPre)){
+                                            int j_ = j-1;
+                                            if (uSets.get(i,j_) != null){
+                                                while (j_ > 0 && !uSets.get(i,j_).contains(gnPrePos)){
+                                                    j_--;
+                                                }
+                                            }
+                                            if (j_ == 0){
+                                                doAdd = false;
+                                            }
+                                        }
+                                        if (!gnPre.getSymbol().isFaulty() && doAdd)
+                                            newSet.add(gnPre);
+                                    }
+                                }
+                            }
+                        }
+                        currSet = uSets.get(i-1,j-1);
+                        if (currSet != null){
+                            for (GameNode gn : currSet){
+                                if (gn.getPlayer().equals("R") || gn.isErrState()){
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        boolean doAdd = true;
+                                        for (GameNode gnPrePos : g.getSuccessors(gnPre)){
+                                            int j_ = j-1;
+                                            while (j_ > 0){
+                                                int i_ = i-1;
+                                                if (uSets.get(i_,j_) != null){
+                                                    while (i_ > 0 && !uSets.get(i_,j_).contains(gnPrePos)){
+                                                        i_--;
+                                                    }
+                                                }
+                                                if (i_ > 0)
+                                                    break;
+                                                j_--;
+                                            }
+                                            if (j_ == 0){
+                                                doAdd = false;
+                                            }
+                                        }
+                                        if (gnPre.getSymbol().isFaulty() && doAdd)
+                                            newSet.add(gnPre);
+                                    }
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        if (gnPre.getSymbol().isFaulty())
+                                            newSet.add(gnPre);
+                                    }
+                                }
+                            }
+                        }
+                        //System.out.println(newSet);
+                        if (newSet.contains(g.getInitial()) && !found){
+                            System.out.println("llegue! " + "step:"+j+" faults:"+i);
+                            faultsMasked = i;
+                            found = true;
+                        }
+                        
+            			uSets.set(i,j,newSet);
+                        //System.out.println("% " + "step:"+j+" faults:"+i +" set: "+uSets.get(i,j) );
+                    }
+        		} 
+        	}
+      //  }
     	//System.out.println(uSets.toString());
     	return Math.round((double)1/faultsMasked * Math.pow(10, 3)) / Math.pow(10, 3);
     }
 
-    public double calculateDistance(Program specProgram, Program impProgram, boolean deadlockIsError){
+    public double calculateDistance2(Program specProgram, Program impProgram, boolean deadlockIsError){
 		// We use dijsktra's algorithm to find the shortest path to an error state
 		// This is the main method of this class
     	buildGraph(specProgram, impProgram, deadlockIsError);
@@ -342,8 +310,8 @@ public class MaskingDistance{
                 if (!to.getVisited()){
                 	Pair p = new Pair(from,to);
                 	int addedCost = 0;
-                	for (int i=0; i < g.getFaultyActions().get(p).size(); i++)
-	            		if (g.getFaultyActions().get(p).get(i))
+                	for (int i=0; i < g.getActions().get(p).size(); i++)
+	            		if (g.getActions().get(p).get(i).isFaulty())
 							addedCost = 1;
                 	if (from.getDistanceValue()+addedCost < to.getDistanceValue()){
                     	to.setDistanceValue(from.getDistanceValue() + addedCost);
@@ -357,67 +325,6 @@ public class MaskingDistance{
         
         double res= Math.round((double)1/(1+minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);
 		return res;
-    }
-
-    public double calculateDistance3(Program specProgram, Program impProgram, boolean deadlockIsError){
-    	buildGraph(specProgram, impProgram, deadlockIsError);
-    	System.out.println("Calculating Distance...");
-
-    	TreeSet<GameNode> rws = new TreeSet<GameNode>(); //refuter winning states
-        LinkedList<GameNode> currs = new LinkedList<GameNode>();
-        rws.add(g.getErrState());
-        currs.add(g.getErrState());
-        while (!currs.isEmpty()){
-        	if (currs.getFirst() == g.getInitial())
-        		break;
-        	GameNode curr = currs.removeFirst();
-
-        	curr.setVisited(true);
-        	if (curr.getPlayer().equals("V")){ //add all refuter predecessors
-	        	for (GameNode pre : g.getPredecessors(curr)){
-	        		if (!pre.getVisited()){
-		        		Pair p = new Pair(pre,curr);
-	                	int addedCost = 0;
-	                	for (int i=0; i < g.getFaultyActions().get(p).size(); i++)
-		            		if (g.getFaultyActions().get(p).get(i))
-								addedCost = 1;
-						pre.setDistanceValue(curr.getDistanceValue()+addedCost);
-		        		rws.add(pre);
-		        		currs.add(pre);
-		        	}
-	        	}
-	        }
-	        else{ //only add verifier predecessors if its successors are all included in rws
-	        	for (GameNode pre : g.getPredecessors(curr)){
-	        		if (!pre.getVisited()){
-		        		boolean valid = true;
-		        		for (GameNode preSucc : g.getSuccessors(pre))
-		        			if (!rws.contains(preSucc))
-		        				valid = false;
-		  				if (valid){
-		  					pre.setDistanceValue(curr.getDistanceValue());
-		        			rws.add(pre);
-		        			currs.add(pre);
-		        		}
-	        		}
-	        	}
-	        }
-	        /*for (GameNode next : g.getPredecessors(curr)){
-	        	if (!next.getVisited())
-	        		currs.add(next);
-	        }*/
-        }
-        //System.out.println(g.getInitial());
-        //System.out.println(g.getInitial().getDistanceValue());
-        //System.out.println(rws.contains(g.getInitial()));
-        //if (rws.contains(g.getInitial())){
-        if (!currs.isEmpty()){
-        	int minDistance = g.getInitial().getDistanceValue();
-        	double res= Math.round((double)1/(1+minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);
-        	return res;
-        }
-        else
-        	return 0;
     }
 	
 	public void printTraceToError(){
@@ -448,9 +355,9 @@ public class MaskingDistance{
 			Integer i = 0;
 			for (GameNode succ : g.getSuccessors(curr)){
 				Pair p = new Pair(curr,succ);
-				if (g.getLabels().get(p) != null){
-	            	for (int j=0; j < g.getLabels().get(p).size(); j++){
-						System.out.println(i+". "+g.getLabels().get(p).get(j)+": "+"["+succ+"]");
+				if (g.getActions().get(p) != null){
+	            	for (int j=0; j < g.getActions().get(p).size(); j++){
+						System.out.println(i+". "+g.getActions().get(p).get(j).getLabel()+": "+"["+succ+"]");
 						i++;
 					}
 				}
@@ -464,8 +371,8 @@ public class MaskingDistance{
 			i = 0;
 			for (GameNode succ : g.getSuccessors(curr)){
 				Pair p = new Pair(curr,succ);
-				if (g.getLabels().get(p) != null){
-	            	for (int j=0; j < g.getLabels().get(p).size(); j++){
+				if (g.getActions().get(p) != null){
+	            	for (int j=0; j < g.getActions().get(p).size(); j++){
 						if (c.equals(i.toString()))
 							track.push(succ);
 						i++;

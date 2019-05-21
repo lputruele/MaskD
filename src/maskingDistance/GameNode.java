@@ -8,7 +8,7 @@ public class GameNode implements Comparable{
 
 	CompositeNode specState; // Current state of the Specification
 	CompositeNode impState; // Current state of the Implementation
-	String symbol; // The symbol of the action that lead to this state
+	Action symbol; // The action that lead to this state
 	String player; // The player that has to play from here
 	boolean mask; // True if the player has to mask this.symbol
 	boolean visited; // Utility for graph traversal algorithms
@@ -20,7 +20,7 @@ public class GameNode implements Comparable{
 		distanceValue = 0;
 	}
 
-	public GameNode(CompositeNode s, CompositeNode i, String sym, String p){
+	public GameNode(CompositeNode s, CompositeNode i, Action sym, String p){
 		specState = s;
 		impState = i;
 		symbol = sym;
@@ -37,7 +37,7 @@ public class GameNode implements Comparable{
 		return impState;
 	}
 
-	public String getSymbol(){
+	public Action getSymbol(){
 		return symbol;
 	}
 
@@ -96,7 +96,7 @@ public class GameNode implements Comparable{
 		if (this.isErrState())
 			res = "ERR_STATE";
 		else
-			res = "SPEC: "+specState.toString()+", SYMBOL: "+symbol+", IMP:"+impState.toString()+", PLAYER: "+player;
+			res = "SPEC: "+specState.toString()+", SYMBOL: "+(symbol.isFromSpec()?"S":"I")+symbol.getLabel()+", IMP:"+impState.toString()+", PLAYER: "+player;
 		return res;
 	}
 
@@ -105,14 +105,14 @@ public class GameNode implements Comparable{
 		if (this.isErrState())
 			res = "ERR_STATE";
 		else{
-			String s = symbol.replaceAll("&","TAU");
+			String s = symbol.getLabel().replaceAll("&","TAU")+(symbol.isFromSpec()?"S":"I");
 			res = "SPEC"+specState.toStringDot()+"__"+s+"__"+"IMP"+impState.toStringDot()+"___"+player;
 		}
 		return res;
 	}
 
 	public boolean isErrState(){
-		return symbol.equals("ERR");
+		return symbol.getLabel().equals("ERR");
 	}
 
 	@Override

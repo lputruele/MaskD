@@ -275,65 +275,12 @@ public class Program extends ProgramNode{
         catch(IOException e){
             e.printStackTrace();
         }
-        toGraph();
+        toGraph(false); //mehhh
         return prog;
     }
 
     /*Generates a explicit model (Kripke structure) for the complete program*/
    /* public ExplicitCompositeModel toGraph(){
-        ExplicitCompositeModel m = new ExplicitCompositeModel(globalVars.getBoolVars());
-        LinkedList<ExplicitModel> procs = new LinkedList<ExplicitModel>();
-
-        //states in m are lists of states (from processes)
-        //calculate initial state
-        CompositeNode init = new CompositeNode(new LinkedList<Node>(), m);
-        for (ProcessDecl pDecl : mainProgram.getProcessDecl()){
-            for (int i = 0; i < process.getProcessList().size(); i++){
-                Process proc = process.getProcessList().get(i);
-                if (pDecl.getType().equals(proc.getName())){
-                    ExplicitModel p = proc.toGraph(mainProgram.getProcessDecl().get(i).getName(), m);//,globalVars.getBoolVars());
-                    p.createDot();
-                    procs.add(p);
-                    init.getNodes().add(p.getInitial());
-                }
-            }
-        }
-        
-        m.addNode(init);
-        m.setInitial(init);
-
-        TreeSet<CompositeNode> iterSet = new TreeSet<CompositeNode>();
-        iterSet.add(m.getInitial());
-
-        //build the whole model
-        while(!iterSet.isEmpty()){
-            CompositeNode curr = iterSet.pollFirst();
-            for (int i = 0; i < curr.getNodes().size(); i++){ // for each process in current global state
-                Node n = curr.getNodes().get(i);
-                for(Node n_ : procs.get(i).getSuccessors(n)){ //for each successor of the process create a global successor
-                    Pair p = new Pair(n,n_);
-                    CompositeNode curr_ = curr.clone();
-                    curr_.getNodes().set(i,n_);
-                    curr_.updateGlobalState(n,n_); //if there are any modifications to shared vars on n_ then update global state
-                    CompositeNode toOld = m.search(curr_);
-                    if (toOld == null){
-                        m.addNode(curr_);
-                        iterSet.add(curr_);
-                        m.addEdge(curr, curr_, procs.get(i).getLabels().get(p), procs.get(i).getFaultyActions().get(p));
-                    }
-                    else{
-                        m.addEdge(curr, toOld, procs.get(i).getLabels().get(p), procs.get(i).getFaultyActions().get(p));
-                    }
-                }
-            }
-        }
-        //ExplicitModel res = m.flatten();
-        m.createDot();
-        return m;
-    }
-*/
-    /*TOTRY: Create the whole model on the fly*/
-    public ExplicitCompositeModel toGraph(){
         ExplicitCompositeModel m = new ExplicitCompositeModel(globalVars);
 
         //states in m are lists of states (from processes)
@@ -344,8 +291,6 @@ public class Program extends ProgramNode{
             for (int i = 0; i < process.getProcessList().size(); i++){
                 Proc proc = process.getProcessList().get(i);
                 if (pDecl.getType().equals(proc.getName())){
-                    //Node pInit = new Node(proc,pDecl.getName(),init,proc.getInitialCond());
-                    //init.getNodes().add(pInit);
                     init.getModel().getProcs().add(proc);
                     init.getModel().getProcDecls().add(pDecl.getName());
                     init.evalInit(proc.getInitialCond(),j);
@@ -362,32 +307,79 @@ public class Program extends ProgramNode{
         //build the whole model
         while(!iterSet.isEmpty()){
             CompositeNode curr = iterSet.pollFirst();
-            //System.out.println(curr);
             for (int i = 0; i < m.getProcDecls().size(); i++){ // for each process in current global state
                 for (Branch b : m.getProcs().get(i).getBranches()){
                     if (b.getIsTau())
                         m.setIsWeak(true);
-                    //System.out.println("    "+m.getProcDecls().get(i)+b.getLabel());
                     if (curr.satisfies(b.getGuard(),i)){
-                        //System.out.println("    "+m.getProcDecls().get(i)+b.getLabel());
                         //create global successor curr_
                         CompositeNode curr_ = curr.createSuccessor(b.getAssignList(),i);
-                        curr_.checkNormCondition(m.getProcs().get(i).getNormativeCond(),i);
+                        //curr_.checkNormCondition(m.getProcs().get(i).getNormativeCond(),i);
                         CompositeNode toOld = m.search(curr_);
                         if (toOld == null){
                             m.addNode(curr_);
                             iterSet.add(curr_);
-                            m.addEdge(curr, curr_, m.getProcDecls().get(i)+b.getLabel(),b.getIsFaulty(),b.getIsTau());
+                            m.addEdge(curr, curr_, new Action(m.getProcDecls().get(i)+b.getLabel(),b.getIsFaulty(),b.getIsTau(),isSpec));
                         }
                         else{
-                            m.addEdge(curr, toOld, m.getProcDecls().get(i)+b.getLabel(),b.getIsFaulty(),b.getIsTau());
+                            m.addEdge(curr, toOld, new Action(m.getProcDecls().get(i)+b.getLabel(),b.getIsFaulty(),b.getIsTau(),isSpec));
                         }
                     }
                 }
             }
         }
-        //System.out.println("hey");
-        //ExplicitModel res = m.flatten();
+        return m;
+    }
+*/
+    /*TOTRY: Create the whole model on the fly*/
+    public ExplicitCompositeModel toGraph(boolean isSpec){
+        ExplicitCompositeModel m = new ExplicitCompositeModel(globalVars, isSpec);
+
+        //states in m are lists of states (from processes)
+        //calculate initial state
+        CompositeNode init = new CompositeNode(m);
+        for (int j=0; j < mainProgram.getProcessDecl().size(); j++){
+            ProcessDecl pDecl = mainProgram.getProcessDecl().get(j);
+            for (int i = 0; i < process.getProcessList().size(); i++){
+                Proc proc = process.getProcessList().get(i);
+                if (pDecl.getType().equals(proc.getName())){
+                    init.getModel().getProcs().add(proc);
+                    init.getModel().getProcDecls().add(pDecl.getName());
+                    init.evalInit(proc.getInitialCond(),j);
+                }
+            }
+        }
+        
+        m.addNode(init);
+        m.setInitial(init);
+
+        TreeSet<CompositeNode> iterSet = new TreeSet<CompositeNode>();
+        iterSet.add(m.getInitial());
+
+        //build the whole model
+        while(!iterSet.isEmpty()){
+            CompositeNode curr = iterSet.pollFirst();
+            for (int i = 0; i < m.getProcDecls().size(); i++){ // for each process in current global state
+                for (Branch b : m.getProcs().get(i).getBranches()){
+                    if (b.getIsTau())
+                        m.setIsWeak(true);
+                    if (curr.satisfies(b.getGuard(),i)){
+                        //create global successor curr_
+                        CompositeNode curr_ = curr.createSuccessor(b.getAssignList(),i);
+                        //curr_.checkNormCondition(m.getProcs().get(i).getNormativeCond(),i);
+                        CompositeNode toOld = m.search(curr_);
+                        if (toOld == null){
+                            m.addNode(curr_);
+                            iterSet.add(curr_);
+                            m.addEdge(curr, curr_, new Action(m.getProcDecls().get(i)+b.getLabel(),b.getIsFaulty(),b.getIsTau(),isSpec));
+                        }
+                        else{
+                            m.addEdge(curr, toOld, new Action(m.getProcDecls().get(i)+b.getLabel(),b.getIsFaulty(),b.getIsTau(),isSpec));
+                        }
+                    }
+                }
+            }
+        }
         return m;
     }
 

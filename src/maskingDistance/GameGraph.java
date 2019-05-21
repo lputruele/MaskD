@@ -8,9 +8,7 @@ public class GameGraph{
 
 	private HashMap<GameNode, TreeSet<GameNode>> succList; // Successors adjacency list
 	private HashMap<GameNode, TreeSet<GameNode>> preList; // Predecessors adjacency list
-	private HashMap<Pair, LinkedList<String>> labels; // Labels for edges
-	private HashMap<Pair, LinkedList<Boolean>> faultyActions; // Which edges correspond to faulty actions
-	private HashMap<Pair, LinkedList<Boolean>> tauActions;
+	private HashMap<Pair, LinkedList<Action>> actions; // actions for edges
 	private GameNode initial; // Initial state
 	private LinkedList<GameNode> nodes; // States
 	private int numNodes;
@@ -20,12 +18,10 @@ public class GameGraph{
 	public GameGraph() {
 		succList = new HashMap<GameNode, TreeSet<GameNode>>();
 		preList = new HashMap<GameNode, TreeSet<GameNode>>();
-		labels = new HashMap<Pair, LinkedList<String>>();
-		faultyActions = new HashMap<Pair, LinkedList<Boolean>>();
-		tauActions = new HashMap<Pair, LinkedList<Boolean>>();
+		actions = new HashMap<Pair, LinkedList<Action>>();
 		numNodes = numEdges = 0;
 		nodes = new LinkedList<GameNode>();
-		errState = new GameNode(null,null,"ERR","");
+		errState = new GameNode(null,null,new Action("ERR", false, false, false),"");
 		addNode(errState);
 
 	}
@@ -51,12 +47,8 @@ public class GameGraph{
 		return initial;
 	}
 
-	public HashMap<Pair, LinkedList<String>> getLabels(){
-		return labels;
-	}
-
-	public HashMap<Pair, LinkedList<Boolean>> getFaultyActions(){
-		return faultyActions;
+	public HashMap<Pair, LinkedList<Action>> getActions(){
+		return actions;
 	}
 
 	public void addNode(GameNode v) {
@@ -79,43 +71,28 @@ public class GameGraph{
 	}
 
 
-	public boolean hasEdge(GameNode from, GameNode to, String lbl) {
+	public boolean hasEdge(GameNode from, GameNode to, Action a) {
 		if (!hasNode(from) || !hasNode(to))
 			return false;
 		Pair transition = new Pair(from,to);
-		if (labels.get(transition) == null)
+		if (actions.get(transition) == null)
 			return false;
-		return labels.get(transition).contains(lbl);
+		return actions.get(transition).contains(a);
 	}
 
 
-	public void addEdge(GameNode from, GameNode to, String lbl, Boolean faulty, Boolean internal) {
+	public void addEdge(GameNode from, GameNode to, Action a) {
 		if (to != null){
-			if (hasEdge(from, to, lbl))
+			if (hasEdge(from, to, a))
 				return;
 			numEdges += 1;
 			succList.get(from).add(to);
 			preList.get(to).add(from);
 			Pair transition = new Pair(from,to);
-			if (labels.get(transition) == null){
-				labels.put(transition,new LinkedList<String>());
-				faultyActions.put(transition,new LinkedList<Boolean>());
-				tauActions.put(transition,new LinkedList<Boolean>());
+			if (actions.get(transition) == null){
+				actions.put(transition, new LinkedList<Action>());
 			}
-			labels.get(transition).add(lbl);
-			faultyActions.get(transition).add(faulty);
-			tauActions.get(transition).add(internal);
-			//check if label already added
-			/*boolean addLabel = true;
-			for (String l : labels.get(transition)){
-				if (l.equals(lbl))
-					addLabel = false;
-			}
-			if (addLabel){
-				numEdges += 1;
-				labels.get(transition).add(lbl);
-				faultyActions.get(transition).add(faulty);
-			}*/
+			actions.get(transition).add(a);
 		}
 	}
 
@@ -143,18 +120,19 @@ public class GameGraph{
 				res += "    "+v.toStringDot()+" [color=\"red\"];\n";
 			for (GameNode u : succList.get(v)){
 				Pair edge = new Pair(v,u);
-				if (labels.get(edge) != null)
-					for (int i=0; i < labels.get(edge).size(); i++)			
-						if (labels.get(edge).get(i).split("M")[0].equals(""))
-							res += "    "+v.toStringDot()+" -> "+ u.toStringDot() +" [color=\"green\",label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+				if (actions.get(edge) != null)
+					for (int i=0; i < actions.get(edge).size(); i++){
+						if (actions.get(edge).get(i).isMask())
+							res += "    "+v.toStringDot()+" -> "+ u.toStringDot() +" [color=\"green\",label = \""+actions.get(edge).get(i).getLabel()+(actions.get(edge).get(i).isFromSpec()?"S":"I")+"\"]"+";\n";
 						else
-							if (faultyActions.get(edge).get(i))
-								res += "    "+v.toStringDot()+" -> "+ u.toStringDot() +" [color=\"red\",label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+							if (actions.get(edge).get(i).isFaulty())
+								res += "    "+v.toStringDot()+" -> "+ u.toStringDot() +" [color=\"red\",label = \""+actions.get(edge).get(i).getLabel()+(actions.get(edge).get(i).isFromSpec()?"S":"I")+"\"]"+";\n";
 							else
-								if (tauActions.get(edge).get(i))
-									res += "    "+v.toStringDot()+" -> "+ u.toStringDot() + " [style=dashed,label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+								if (actions.get(edge).get(i).isTau())
+									res += "    "+v.toStringDot()+" -> "+ u.toStringDot() + " [style=dashed,label = \""+actions.get(edge).get(i).getLabel()+(actions.get(edge).get(i).isFromSpec()?"S":"I")+"\"]"+";\n";
 								else
-									res += "    "+v.toStringDot()+" -> "+ u.toStringDot() +" [label = \""+labels.get(edge).get(i)+"\"]"+";\n";
+									res += "    "+v.toStringDot()+" -> "+ u.toStringDot() +" [label = \""+actions.get(edge).get(i).getLabel()+(actions.get(edge).get(i).isFromSpec()?"S":"I")+"\"]"+";\n";
+					}			
 			}
 		}
 		res += "\n}";
