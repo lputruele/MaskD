@@ -5,10 +5,10 @@ public class DynamicMatrix2D<E> {
     private ArrayList<ArrayList<E>> matrix;
 
     public DynamicMatrix2D(){
-        matrix = new ArrayList<ArrayList<E>>(100);
-        for (int i=0;i<100;i++){
-            matrix.add(i,new ArrayList<E>(1000));
-            for (int j=0;j<1000;j++){
+        matrix = new ArrayList<ArrayList<E>>(20);
+        for (int i=0;i<20;i++){
+            matrix.add(i,new ArrayList<E>(50));
+            for (int j=0;j<50;j++){
                 matrix.get(i).add(j,null);  
             }
         }

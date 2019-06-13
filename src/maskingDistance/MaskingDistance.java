@@ -174,7 +174,8 @@ public class MaskingDistance{
 
 	
 
-	public double calculateDistance(Program specProgram, Program impProgram, boolean deadlockIsError){
+	public double calculateDistance(Program specProgram, Program impProgram, boolean deadlockIsError, boolean noBisim){
+        bisim = !noBisim;
 		int faultsMasked = Integer.MAX_VALUE;
         boolean found = false;
     	buildGraph(specProgram, impProgram, deadlockIsError);
@@ -190,13 +191,15 @@ public class MaskingDistance{
     	initialSet.add(g.getErrState());
     	uSets.set(1,1,initialSet); // base case: 1,1 has error State set
 
+        TreeSet<GameNode> currSet,newSet;
+
         //INDUCTIVE CASE
         //while (!found){
         	for (int j = 1; j < uSets.getColLength() && !found; j++){ //estos ciclos estan mal
         		for (int i = 1; i < uSets.getRowLength() && !found; i++){
                     if (uSets.get(i,j) == null){
-            			TreeSet<GameNode> currSet = uSets.get(i,j-1);
-            			TreeSet<GameNode> newSet = new TreeSet<GameNode>();
+            			currSet = uSets.get(i,j-1);
+            			newSet = new TreeSet<GameNode>();
             			//TreeSet<GameNode> newSetF = new TreeSet<GameNode>();
             			if (currSet != null){
                         //System.out.println(uSets.get(i,j));
@@ -263,13 +266,12 @@ public class MaskingDistance{
                         }
                         //System.out.println(newSet);
                         if (newSet.contains(g.getInitial()) && !found){
-                            System.out.println("llegue! " + "step:"+j+" faults:"+i);
+                            //System.out.println("step:"+j+" faults:"+i);
                             faultsMasked = i;
                             found = true;
                         }
                         
             			uSets.set(i,j,newSet);
-                        //System.out.println("% " + "step:"+j+" faults:"+i +" set: "+uSets.get(i,j) );
                     }
         		} 
         	}
@@ -278,9 +280,150 @@ public class MaskingDistance{
     	return Math.round((double)1/faultsMasked * Math.pow(10, 3)) / Math.pow(10, 3);
     }
 
-    public double calculateDistance2(Program specProgram, Program impProgram, boolean deadlockIsError){
+    /*public double calculateDistancePaper(Program specProgram, Program impProgram, boolean deadlockIsError){
+        int faultsMasked = Integer.MAX_VALUE;
+        boolean found = false;
+        buildGraph(specProgram, impProgram, deadlockIsError);
+        System.out.println("Calculating Distance...");
+        DynamicMatrix2D<TreeSet<GameNode>> uSets = new DynamicMatrix2D<TreeSet<GameNode>>(); //dynamic programming matrix
+        TreeSet<GameNode> initialSet = new TreeSet<GameNode>();
+
+        //BASE CASES
+        for (int i = 0; i < uSets.getRowLength(); i++){
+            uSets.set(0,i, new TreeSet<GameNode>());
+            uSets.set(i,0, new TreeSet<GameNode>());
+        }
+        initialSet.add(g.getErrState());
+        uSets.set(1,1,initialSet); // base case: 1,1 has error State set
+
+        TreeSet<GameNode> currSet,newSet;
+
+        //INDUCTIVE CASE
+        //while (!found){
+            for (int j = 1; j < uSets.getColLength() && !found; j++){ //estos ciclos estan mal
+                for (int i = 1; i < uSets.getRowLength() && !found; i++){
+                    if (uSets.get(i,j) == null){
+                        currSet = uSets.get(i,j-1);
+                        newSet = new TreeSet<GameNode>();
+                        //TreeSet<GameNode> newSetF = new TreeSet<GameNode>();
+                        if (currSet != null){
+                        //System.out.println(uSets.get(i,j));
+                            for (GameNode gn : currSet){
+                                //if (gn == g.getInitial() && i < faultsMasked)
+                                //  faultsMasked = i;
+                                if (gn.getPlayer().equals("V")){
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        newSet.add(gnPre);
+                                    }
+                                }
+                                else{ //V
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        boolean doAdd = true;
+                                        for (GameNode gnPrePos : g.getSuccessors(gnPre)){
+                                            int j_ = j-1;
+                                            if (uSets.get(i,j_) != null){
+                                                while (j_ > 0 && !uSets.get(i,j_).contains(gnPrePos)){
+                                                    j_--;
+                                                }
+                                            }
+                                            if (j_ == 0){
+                                                doAdd = false;
+                                            }
+                                        }
+                                        if (!gnPre.getSymbol().isFaulty() && doAdd)
+                                            newSet.add(gnPre);
+                                    }
+                                }
+                            }
+                        }
+                        currSet = uSets.get(i-1,j-1);
+                        if (currSet != null){
+                            for (GameNode gn : currSet){
+                                if (gn.getPlayer().equals("R") || gn.isErrState()){
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        boolean doAdd = true;
+                                        for (GameNode gnPrePos : g.getSuccessors(gnPre)){
+                                            int j_ = j-1;
+                                            while (j_ > 0){
+                                                int i_ = i-1;
+                                                if (uSets.get(i_,j_) != null){
+                                                    while (i_ > 0 && !uSets.get(i_,j_).contains(gnPrePos)){
+                                                        i_--;
+                                                    }
+                                                }
+                                                if (i_ > 0)
+                                                    break;
+                                                j_--;
+                                            }
+                                            if (j_ == 0){
+                                                doAdd = false;
+                                            }
+                                        }
+                                        if (gnPre.getSymbol().isFaulty() && doAdd)
+                                            newSet.add(gnPre);
+                                    }
+                                    for (GameNode gnPre : g.getPredecessors(gn)){
+                                        if (gnPre.getSymbol().isFaulty())
+                                            newSet.add(gnPre);
+                                    }
+                                }
+                            }
+                        }
+                        //System.out.println(newSet);
+                        if (newSet.contains(g.getInitial()) && !found){
+                            System.out.println("step:"+j+" faults:"+i);
+                            faultsMasked = i;
+                            found = true;
+                        }
+                        
+                        uSets.set(i,j,newSet);
+                        System.out.println("% " + "step:"+j+" faults:"+i );
+                    }
+                } 
+            }
+      //  }
+        //System.out.println(uSets.toString());
+        return Math.round((double)1/faultsMasked * Math.pow(10, 3)) / Math.pow(10, 3);
+    }*/
+
+    public double calculateDistanceBFS(Program specProgram, Program impProgram, boolean deadlockIsError, boolean noBisim){
+        bisim = !noBisim;
+        buildGraph(specProgram, impProgram, deadlockIsError);
+        System.out.println("Calculating Distance...");
+
+        g.getInitial().setDistanceValue(0);
+        
+        LinkedList<GameNode> q = new LinkedList<GameNode>() ;
+        q.addFirst(g.getInitial());
+        while (!q.isEmpty()) {
+            GameNode v = q.getFirst();
+            q.removeFirst();
+            for (GameNode adj : g.getSuccessors(v)) {
+                Pair p = new Pair(v,adj);
+                for (Action a : g.getActions().get(p)){
+                    int w = a.isFaulty()?1:0;
+                    if (v.getDistanceValue() + w < adj.getDistanceValue()) {
+                        adj.setDistanceValue(v.getDistanceValue() + w);
+                        if (w == 1)
+                            q.addLast(adj);
+                        else
+                            q.addFirst(adj);
+                    }
+                }
+            }
+        }
+
+        int minDistance = g.getErrState().getDistanceValue();
+        
+        double res= Math.round((double)1/(1+minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);
+        return res;
+    }
+
+
+    public double calculateDistanceDeterministic(Program specProgram, Program impProgram, boolean deadlockIsError, boolean noBisim){
 		// We use dijsktra's algorithm to find the shortest path to an error state
 		// This is the main method of this class
+        bisim = !noBisim;
     	buildGraph(specProgram, impProgram, deadlockIsError);
     	System.out.println("Calculating Distance...");
     	//System.out.println("State space: "+g.getNumNodes());
@@ -327,6 +470,7 @@ public class MaskingDistance{
 		return res;
     }
 	
+    //Only works together with -det
 	public void printTraceToError(){
 		System.out.println("\n·····ERROR PATH·····\n");
 		GameNode curr = g.getErrState();

@@ -26,7 +26,7 @@ public class GameNode implements Comparable{
 		symbol = sym;
 		player = p;
 		visited = false;
-		distanceValue = 0;
+		distanceValue = Integer.MAX_VALUE;
 	}
 
 	public CompositeNode getSpecState(){
