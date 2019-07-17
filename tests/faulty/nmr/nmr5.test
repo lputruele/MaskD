@@ -4,6 +4,7 @@ Process Module(out:BOOL) {
 	Initial: !i0 && !i1 && !i2 && !i3 && !i4;
 	Normative: true;
 
+	[normal] true -> out = out;
 	[fail] faulty true -> out = !out;
 }
 

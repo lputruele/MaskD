@@ -8,10 +8,11 @@ import faulty.*;
 public class MaskingDistance{
 
 	private GameGraph g; // The masking distance game graph, undefined until buildGraph is called
-    private boolean bisim = true;
+    private boolean noBisimulation = false;
 
-	public MaskingDistance(){
-
+	public MaskingDistance(Program specProgram, Program impProgram, boolean deadlockIsError, boolean noBisim){
+        noBisimulation = noBisim;
+        buildGraph(specProgram, impProgram, deadlockIsError);
 	}
 
 	public GameGraph getG(){
@@ -45,8 +46,16 @@ public class MaskingDistance{
         //build the game graph
         while(!iterSet.isEmpty()){
             GameNode curr = iterSet.pollFirst();
-            if (deadlockIsError && imp.getSuccessors(curr.getImpState()).size() == 1){ // this is a special deadlock case
-            		g.addEdge(curr,g.getErrState(),new Action("ERR", false, false, false));
+            /*if (deadlockIsError && imp.getSuccessors(curr.getImpState()).size() == 1 && curr.getPlayer() == "V" && !curr.getMask()){ // this is a special deadlock case
+                g.addEdge(curr,g.getErrState(),new Action("ERR", false, false, false));
+            }*/
+            
+            if (deadlockIsError && imp.getSuccessors(curr.getImpState()).size() == 1 && curr.getPlayer() == "R"){ // this is a special deadlock case
+                    Action preErr = new Action("DEADLOCK_ERR", false, false, false);
+                    GameNode curr_ = new GameNode(curr.getSpecState(),curr.getImpState(),preErr,"V");
+                    g.addNode(curr_);
+                    g.addEdge(curr,curr_,preErr);
+                    iterSet.add(curr_);
             }
             if (curr.getPlayer() == "R"){ //if player is refuter we add its possible moves from current state
                 //IMP MOVES
@@ -70,7 +79,7 @@ public class MaskingDistance{
             		}
             	}
                 //SPEC MOVES
-                if (bisim){
+                if (!noBisimulation){
                     for (CompositeNode succ : spec.getSuccessors(curr.getSpecState())){
                         Pair p = new Pair(curr.getSpecState(),succ);
                         if (spec.getActions().get(p) != null){
@@ -138,7 +147,7 @@ public class MaskingDistance{
                     }
                 }
                 else{//IMP MOVES
-                    if (bisim){
+                    if (!noBisimulation){
                         for (CompositeNode succ : imp.getSuccessors(curr.getImpState())){
                             Pair p = new Pair(curr.getImpState(),succ);
                             if (imp.getActions().get(p) != null){
@@ -164,6 +173,7 @@ public class MaskingDistance{
                         }
                     }
                 }
+
             	if (!foundSucc){
         			g.addEdge(curr,g.getErrState(),new Action("ERR", false, false, false));
             	}
@@ -174,48 +184,52 @@ public class MaskingDistance{
 
 	
 
-	public double calculateDistance(Program specProgram, Program impProgram, boolean deadlockIsError, boolean noBisim){
-        bisim = !noBisim;
+	public double calculateDistance(){
 		int faultsMasked = Integer.MAX_VALUE;
         boolean found = false;
-    	buildGraph(specProgram, impProgram, deadlockIsError);
     	System.out.println("Calculating Distance...");
     	DynamicMatrix2D<TreeSet<GameNode>> uSets = new DynamicMatrix2D<TreeSet<GameNode>>(); //dynamic programming matrix
     	TreeSet<GameNode> initialSet = new TreeSet<GameNode>();
 
         //BASE CASES
-        for (int i = 0; i < uSets.getRowLength(); i++){
+        for (int i = 0; i < uSets.getColLength(); i++){
             uSets.set(0,i, new TreeSet<GameNode>());
             uSets.set(i,0, new TreeSet<GameNode>());
         }
+        g.getErrState().setVisited(true);
     	initialSet.add(g.getErrState());
     	uSets.set(1,1,initialSet); // base case: 1,1 has error State set
 
         TreeSet<GameNode> currSet,newSet;
+        int rowLimit = uSets.getRowLength();
 
         //INDUCTIVE CASE
-        //while (!found){
-        	for (int j = 1; j < uSets.getColLength() && !found; j++){ //estos ciclos estan mal
-        		for (int i = 1; i < uSets.getRowLength() && !found; i++){
+        	for (int j = 2; j < uSets.getColLength() && !found; j++){ 
+        		for (int i = 1; i < rowLimit && !found; i++){
+                    //for (int j = 2; j < uSets.getColLength() && !found; j++){ 
                     if (uSets.get(i,j) == null){
             			currSet = uSets.get(i,j-1);
             			newSet = new TreeSet<GameNode>();
-            			//TreeSet<GameNode> newSetF = new TreeSet<GameNode>();
             			if (currSet != null){
                         //System.out.println(uSets.get(i,j));
             				for (GameNode gn : currSet){
-            					//if (gn == g.getInitial() && i < faultsMasked)
-            					//	faultsMasked = i;
+            					
                                 if (gn.getPlayer().equals("V")){
                                     for (GameNode gnPre : g.getPredecessors(gn)){
-                                        newSet.add(gnPre);
+                                        //if (!gnPre.getVisited()){
+                                        //if (i<gnPre.getDistanceValue()){
+                                            //System.out.println("case 1");
+                                            //gnPre.setVisited(true);
+                                            gnPre.setDistanceValue(i);
+                                            newSet.add(gnPre);
+                                        //}
                                     }
                                 }
-                                else{ //V
+                                else{ //R
                                     for (GameNode gnPre : g.getPredecessors(gn)){
                                         boolean doAdd = true;
                                         for (GameNode gnPrePos : g.getSuccessors(gnPre)){
-                                            int j_ = j-1;
+                                            /*int j_ = j-1;
                                             if (uSets.get(i,j_) != null){
                                                 while (j_ > 0 && !uSets.get(i,j_).contains(gnPrePos)){
                                                     j_--;
@@ -223,24 +237,10 @@ public class MaskingDistance{
                                             }
                                             if (j_ == 0){
                                                 doAdd = false;
-                                            }
-                                        }
-                                        if (!gnPre.getSymbol().isFaulty() && doAdd)
-                                            newSet.add(gnPre);
-                                    }
-                                }
-                            }
-                        }
-                        currSet = uSets.get(i-1,j-1);
-                        if (currSet != null){
-                            for (GameNode gn : currSet){
-                                if (gn.getPlayer().equals("R") || gn.isErrState()){
-                                    for (GameNode gnPre : g.getPredecessors(gn)){
-                                        boolean doAdd = true;
-                                        for (GameNode gnPrePos : g.getSuccessors(gnPre)){
-                                            int j_ = j-1;
+                                            }*/
+                                            int j_ = j-1; //antes era j_ = j-1
                                             while (j_ > 0){
-                                                int i_ = i-1;
+                                                int i_ = i;
                                                 if (uSets.get(i_,j_) != null){
                                                     while (i_ > 0 && !uSets.get(i_,j_).contains(gnPrePos)){
                                                         i_--;
@@ -254,30 +254,165 @@ public class MaskingDistance{
                                                 doAdd = false;
                                             }
                                         }
-                                        if (gnPre.getSymbol().isFaulty() && doAdd)
-                                            newSet.add(gnPre);
+                                        if (!gnPre.getSymbol().isFaulty() && doAdd){
+                                            //if (!gnPre.getVisited()){
+                                            //if (i<gnPre.getDistanceValue()){
+                                                //System.out.println("case 1");
+                                                //gnPre.setVisited(true);
+                                                gnPre.setDistanceValue(i);
+                                                newSet.add(gnPre);
+                                            //}
+                                        }
                                     }
+                                }
+                            }
+                        }
+                        currSet = uSets.get(i-1,j-1);
+                        if (currSet != null){
+                            for (GameNode gn : currSet){
+                                if (gn.getPlayer().equals("R") || gn.isErrState()){
                                     for (GameNode gnPre : g.getPredecessors(gn)){
-                                        if (gnPre.getSymbol().isFaulty())
-                                            newSet.add(gnPre);
+                                        boolean doAdd = true;
+                                        for (GameNode gnPrePos : g.getSuccessors(gnPre)){
+                                            int j_ = j-1; // antes era j_ = j-1, sino da md=0.0 en algunos casos
+                                            while (j_ > 0){
+                                                int i_ = i-1; // antes era i_ = i-1, sino da md=0.0 en algunos casos
+                                                if (uSets.get(i_,j_) != null){
+                                                    while (i_ > 0 && !uSets.get(i_,j_).contains(gnPrePos)){
+                                                        i_--;
+                                                    }
+                                                }
+                                                if (i_ > 0)
+                                                    break;
+                                                j_--;
+                                            }
+                                            if (j_ == 0){
+                                                doAdd = false;
+                                            }
+                                        }
+                                        if (gnPre.getSymbol().isFaulty() && doAdd){
+                                            //if (!gnPre.getVisited()){
+                                            //if (i<gnPre.getDistanceValue()){
+                                                //System.out.println("case 1");
+                                                //gnPre.setVisited(true);
+                                                gnPre.setDistanceValue(i);
+                                                newSet.add(gnPre);
+                                            //}
+                                        }
                                     }
+                                    /*for (GameNode gnPre : g.getPredecessors(gn)){
+                                        if (gnPre.getSymbol().isFaulty()){
+                                            if (!gnPre.getVisited()){
+                                                gnPre.setVisited(true);
+                                                newSet.add(gnPre);
+                                            }
+                                        }
+                                    }*/
                                 }
                             }
                         }
                         //System.out.println(newSet);
                         if (newSet.contains(g.getInitial()) && !found){
-                            //System.out.println("step:"+j+" faults:"+i);
-                            faultsMasked = i;
+                            System.out.println("Step:"+j+" Faults:"+i);
+                            if (i < faultsMasked){
+                                faultsMasked = i;
+                                rowLimit = i;
+                            }
                             found = true;
                         }
-                        
             			uSets.set(i,j,newSet);
                     }
         		} 
         	}
-      //  }
     	//System.out.println(uSets.toString());
     	return Math.round((double)1/faultsMasked * Math.pow(10, 3)) / Math.pow(10, 3);
+    }
+
+    public double calculateDistance2(){
+        int faultsMasked = Integer.MAX_VALUE;
+        boolean found = false;
+        System.out.println("Calculating Distance...");
+        DynamicMatrix2D<TreeSet<GameNode>> uSets = new DynamicMatrix2D<TreeSet<GameNode>>(); //dynamic programming matrix
+        TreeSet<GameNode> initialSet = new TreeSet<GameNode>();
+
+        //BASE CASES
+        for (int i = 0; i < uSets.getColLength(); i++){
+            uSets.set(0,i, new TreeSet<GameNode>());
+            uSets.set(i,0, new TreeSet<GameNode>());
+        }
+        g.getErrState().setVisited(true);
+        initialSet.add(g.getErrState());
+        uSets.set(1,1,initialSet); // base case: 1,1 has error State set
+
+        faultsMasked = calculateDistanceAux(1,1,uSets,true);
+
+        //System.out.println(uSets.toString());
+        return Math.round((double)1/faultsMasked * Math.pow(10, 3)) / Math.pow(10, 3);
+    }
+
+    public int calculateDistanceAux(int i, int j, DynamicMatrix2D<TreeSet<GameNode>> m, boolean cont){
+        if (cont && m.get(i,j) != null){
+            TreeSet<GameNode> newSet = new TreeSet<GameNode>();
+            TreeSet<GameNode> newSet2 = new TreeSet<GameNode>();
+            for (GameNode gn : m.get(i,j)){
+                if (gn.getPlayer().equals("V")){
+                    for (GameNode gnPre : g.getPredecessors(gn)){
+                        if (!gnPre.getVisited()){
+                            gnPre.setVisited(true);
+                            newSet.add(gnPre);
+                        }
+                    }
+                }
+                else{
+                    for (GameNode gnPre : g.getPredecessors(gn)){
+                        boolean doAdd = true;
+                        for (GameNode gnPrePos : g.getSuccessors(gnPre)){
+                            int j_ = j; // antes era j_ = j-1, sino da md=0.0 en algunos casos
+                            while (j_ > 0){
+                                int i_ = i; // antes era i_ = i-1, sino da md=0.0 en algunos casos
+                                if (m.get(i_,j_) != null){
+                                    while (i_ > 0 && !m.get(i_,j_).contains(gnPrePos)){
+                                        i_--;
+                                    }
+                                }
+                                if (i_ > 0)
+                                    break;
+                                j_--;
+                            }
+                            if (j_ == 0){
+                                doAdd = false;
+                            }
+                        }
+                        if (doAdd){
+                            if (gnPre.getSymbol().isFaulty()){
+                                //if (!gnPre.getVisited()){
+                                    gnPre.setVisited(true);
+                                    newSet2.add(gnPre);
+                                //}
+                            }
+                            else{
+                                //if (!gnPre.getVisited()){
+                                    gnPre.setVisited(true);
+                                    newSet.add(gnPre);
+                                //}
+                            }
+                        }
+                    }
+                }
+            }
+            m.set(i,j+1,newSet);
+            m.set(i+1,j+1,newSet2);
+
+            boolean cont1 = !newSet.contains(g.getInitial()) && !newSet.isEmpty();
+            boolean cont2 = !newSet2.contains(g.getInitial()) && !newSet2.isEmpty();
+
+            int v1 = calculateDistanceAux(i,j+1,m,cont1);
+            int v2 = calculateDistanceAux(i+1,j+1,m,cont2);
+            return v1<v2?v2:v1;
+        }
+        else{
+            return i;
+        }
     }
 
     /*public double calculateDistancePaper(Program specProgram, Program impProgram, boolean deadlockIsError){
@@ -386,9 +521,76 @@ public class MaskingDistance{
         return Math.round((double)1/faultsMasked * Math.pow(10, 3)) / Math.pow(10, 3);
     }*/
 
-    public double calculateDistanceBFS(Program specProgram, Program impProgram, boolean deadlockIsError, boolean noBisim){
-        bisim = !noBisim;
-        buildGraph(specProgram, impProgram, deadlockIsError);
+    /*
+    public double calculateDistance2(){
+        System.out.println("Calculating Distance...");
+        System.out.println("Nodes:"+g.getNodes().size());
+        int cantElems = 0;
+        TreeSet<GameNode> winningRegion = new TreeSet<GameNode>();
+        LinkedList<GameNode> currSet = new LinkedList<GameNode>();
+        LinkedList<GameNode> nextSet = new LinkedList<GameNode>();
+        g.getErrState().setDistanceValue(1);
+        winningRegion.add(g.getErrState());
+        nextSet.add(g.getErrState());
+
+        while (!nextSet.isEmpty()){
+            for (GameNode n : nextSet){
+                currSet.add(n);
+            }
+            nextSet = new LinkedList<GameNode>();
+            while (!currSet.isEmpty()){
+                GameNode curr = currSet.removeFirst();
+                if (curr.getPlayer().equals("R")){
+                    for (GameNode s : g.getSuccessors(curr)){
+                        if (s.getDistanceValue()<curr.getDistanceValue()){
+                            curr.setDistanceValue(s.getDistanceValue());
+                        }
+                    } 
+                }
+                if (curr.getPlayer().equals("V")){
+                    for (GameNode s : g.getSuccessors(curr)){
+                        if (s.getDistanceValue()>curr.getDistanceValue()){
+                            curr.setDistanceValue(s.getDistanceValue());
+                        }
+                    } 
+                }
+                for (GameNode n : g.getPredecessors(curr)){
+                    if (n.getPlayer().equals("R")){   
+                        boolean add = true;
+                        for (GameNode ns : g.getSuccessors(n)){
+                            if (!winningRegion.contains(ns)){
+                                add = false;
+                                break;
+                            }
+                        }
+                        if (add){
+                            winningRegion.add(n);
+                            nextSet.add(n);
+                        }
+                    }
+                    else{
+                        if (curr.getSymbol().isFaulty()){
+                            curr.setDistanceValue(curr.getDistanceValue()+1);
+                            if (curr.getDistanceValue() < 0)
+                                curr.setDistanceValue(1);
+                        }
+                        
+                        winningRegion.add(n);
+                        nextSet.add(n);
+                    }
+                }
+                System.out.println(nextSet.size());
+            }
+        }
+
+        System.out.println(winningRegion.contains(g.getInitial()));
+        int minDistance = g.getInitial().getDistanceValue();
+        
+        double res= Math.round((double)1/(1+minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);
+        return res;
+    }
+    */
+    public double calculateDistanceBFS(){
         System.out.println("Calculating Distance...");
 
         g.getInitial().setDistanceValue(0);
@@ -403,6 +605,7 @@ public class MaskingDistance{
                 for (Action a : g.getActions().get(p)){
                     int w = a.isFaulty()?1:0;
                     if (v.getDistanceValue() + w < adj.getDistanceValue()) {
+                        adj.setPreviousNodeInPath(v);
                         adj.setDistanceValue(v.getDistanceValue() + w);
                         if (w == 1)
                             q.addLast(adj);
@@ -419,24 +622,14 @@ public class MaskingDistance{
         return res;
     }
 
-
-    public double calculateDistanceDeterministic(Program specProgram, Program impProgram, boolean deadlockIsError, boolean noBisim){
+    
+    public double calculateDistanceDijsktra(){
 		// We use dijsktra's algorithm to find the shortest path to an error state
 		// This is the main method of this class
-        bisim = !noBisim;
-    	buildGraph(specProgram, impProgram, deadlockIsError);
     	System.out.println("Calculating Distance...");
-    	//System.out.println("State space: "+g.getNumNodes());
-    	//System.out.println("Number of edges: "+g.getNumEdges());
 
-        for(GameNode n : g.getNodes()){
-        	n.setDistanceValue(Integer.MAX_VALUE);
-        	n.setVisited(false);
-        	n.setPreviousNodeInPath(null);
-        }
         g.getInitial().setDistanceValue(0);
-        //System.out.println("Nodes:"+g.getNodes().size());
-        // Find shortest path for all vertices
+
         for (int count = 0; count < g.getNodes().size(); count++){
         	int min = Integer.MAX_VALUE;
         	int minIndex = 0;
@@ -470,8 +663,10 @@ public class MaskingDistance{
 		return res;
     }
 	
+
     //Only works together with -det
 	public void printTraceToError(){
+        System.out.println("Masking Distance: "+calculateDistanceDijsktra());
 		System.out.println("\n·····ERROR PATH·····\n");
 		GameNode curr = g.getErrState();
 		int i = 0;
@@ -481,6 +676,13 @@ public class MaskingDistance{
 			i++;
 		}
 	}
+
+    public void printUnmatches(){
+        System.out.println("\n·····ACTIONS LEADING TO ERROR·····\n");
+        for (GameNode n : g.getPredecessors(g.getErrState())){
+            System.out.println(n.getSymbol().getLabel());
+        }
+    }
 
 	public void createDot(){
 		g.createDot();

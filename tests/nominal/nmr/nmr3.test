@@ -4,7 +4,7 @@ Process Module(out:BOOL) {
 	Initial: !i0 && !i1 && !i2;
 	Normative: true;
 
-	true -> out = out;
+	[normal] true -> out = out;
 }
 
 Process Voter{

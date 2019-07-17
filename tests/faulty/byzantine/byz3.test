@@ -1,35 +1,35 @@
-Global g1g2A,g1g3A: BOOL; //Commander(g1) attack messages
-Global g2g3A: BOOL; //Lieutenant1(g2) attack messages
-Global g3g2A: BOOL; //Lieutenant2(g3) attack messages
+Enum STATE = {idle,sent,finished};
+Enum ORDER = {null,retreat,attack};
 
-Global g1g2R,g1g3R: BOOL; //Commander(g1) retreat messages
-Global g2g3R: BOOL; //Lieutenant1(g2) retreat messages
-Global g3g2R: BOOL; //Lieutenant2(g3) retreat messages
+Global g1g2,g1g3: ORDER; //Commander(g1) messages
+Global g2g3: ORDER; //Lieutenant1(g2) messages
+Global g3g2: ORDER; //Lieutenant2(g3) messages
 
-Global A2,A3: BOOL; //The Attack decision of each lieutenant
-Global R2,R3: BOOL; //The Retreat decision of each lieutenant
+Global d2,d3: ORDER; //The decision of each lieutenant
+
 
 Process Commander{
-	s0,s1: BOOL;
-	Initial: s0 && !s1;
+	s: STATE;
+	Initial: s==idle && g1g2==null && g1g3==null && g2g3==null && g3g2==null && d2==null && d3==null;
 	Normative: true;
-		[sA] s0 -> g1g2A = true, g1g3A = true, s0= false, s1=true;
-		[sR] s0 -> g1g2R = true, g1g3R = true, s0= false, s1=true;
+		[sA] s == idle -> g1g2 = attack, g1g3 = attack, s = sent;
+		[sR] s == idle -> g1g2 = retreat, g1g3 = retreat, s = sent;
 }
 
 
-Process Lieutenant(attack: BOOL, retreat: BOOL, fw1A: BOOL, fw1R:BOOL, a1:BOOL, r1:BOOL, dA:BOOL, dR:BOOL){
-	s0,s1,s2, isBetrayer: BOOL;
-	Initial: s0 && !s1 && !s2 && !isBetrayer;
+Process Lieutenant(order:ORDER, fw1:ORDER, r1:ORDER, d:ORDER){
+	isBetrayer: BOOL;
+	s: STATE;
+	Initial: s == idle && !isBetrayer && g1g2==null && g1g3==null && g2g3==null && g3g2==null && d2==null && d3==null;
 	Normative: true;
-		[fA] s0 && attack && !isBetrayer -> fw1A = true, s0 = false, s1 = true;
-		[fR] s0 && retreat && !isBetrayer -> fw1R = true, s0 = false, s1 = true;
-		[fA] s0 && attack && isBetrayer -> fw1R = true, s0 = false, s1 = true;
-		[fR] s0 && retreat && isBetrayer -> fw1A = true, s0 = false, s1 = true;
-		[Betray] faulty s0 && !isBetrayer -> isBetrayer = true; 
-		[Attack] s1 && !isBetrayer && ((attack && a1)) -> s1 = false, s2 = true, dA = true;
-		[Retreat] s1 && !isBetrayer && ((retreat && r1)) -> s1 = false, s2 = true, dR = true;
-		[Retreat] s1 && !isBetrayer && !((retreat && r1)) && !((attack && a1)) -> s1 = false, s2 = true, dR = true;
+		[fA] s == idle && order == attack && !isBetrayer -> fw1 = attack, s = sent;
+		[fR] s == idle && order == retreat && !isBetrayer -> fw1 = retreat, s = sent;
+		[fA] s == idle && order == attack && isBetrayer -> fw1 = retreat, s = sent;
+		[fR] s == idle && order == retreat && isBetrayer -> fw1 = attack, s = sent;
+		[Betray] faulty s == idle && !isBetrayer -> isBetrayer = true; 
+		[Attack] s == sent && !isBetrayer && ((order==attack && r1==attack)) -> s = finished, d = attack;
+		[Retreat] s == sent && !isBetrayer && ((order==retreat && r1==retreat)) -> s = finished, d = retreat;
+		[Retreat] s == sent && !isBetrayer && !((order==retreat && r1==retreat)) && !((order==attack && r1==attack)) -> s = finished, d = retreat;
 
 }
 
@@ -41,6 +41,6 @@ Main(){
     g2:Lieutenant;
     g3:Lieutenant;
     run g1();
-    run g2(g1g2A,g1g2R,g2g3A,g2g3R,g3g2A,g3g2R,A2,R2);
-    run g3(g1g3A,g1g3R,g3g2A,g3g2R,g2g3A,g2g3R,A3,R3);
+    run g2(g1g2,g2g3,g3g2,d2);
+    run g3(g1g3,g3g2,g2g3,d3);
 }

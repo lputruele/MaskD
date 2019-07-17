@@ -176,6 +176,8 @@ public class ExplicitCompositeModel {
 
 	public void saturate(){
 		//Add tau self-loops
+		//if (!isWeak)
+		//	return;
 		for (CompositeNode p : nodes){
 			addEdge(p,p,new Action("&",false,true,isSpec)); // p -> p is internal
 		}

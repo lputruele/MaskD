@@ -115,7 +115,10 @@ public class GameGraph{
 			if (v.getPlayer().equals("V"))
 				res += "    "+v.toStringDot()+" [color=\"lightblue\"];\n";
 			if (v.getPlayer().equals("R"))
-				res += "    "+v.toStringDot()+" [color=\"grey\"];\n";
+				if (v == initial)
+					res += "    "+v.toStringDot()+" [color=\"pink\"];\n";
+				else
+					res += "    "+v.toStringDot()+" [color=\"grey\"];\n";
 			if (v.getPlayer().equals(""))
 				res += "    "+v.toStringDot()+" [color=\"red\"];\n";
 			for (GameNode u : succList.get(v)){

@@ -3,18 +3,21 @@ import java.util.*;
 
 public class DynamicMatrix2D<E> {
     private ArrayList<ArrayList<E>> matrix;
+    private int rows = 200;
+    private int cols = 200;
 
     public DynamicMatrix2D(){
-        matrix = new ArrayList<ArrayList<E>>(20);
-        for (int i=0;i<20;i++){
-            matrix.add(i,new ArrayList<E>(50));
-            for (int j=0;j<50;j++){
+        matrix = new ArrayList<ArrayList<E>>(rows);
+        for (int i=0;i<rows;i++){
+            matrix.add(i,new ArrayList<E>(cols));
+            for (int j=0;j<cols;j++){
                 matrix.get(i).add(j,null);  
             }
         }
     }
 
     public void set(int x, int y, E value) {
+        //System.out.println("x:"+x+"  y:"+y);
         /*if (x >= matrix.size()) {
             ArrayList<ArrayList<E>> tmp = copyMatrix();
             matrix = new ArrayList<ArrayList<E>>(x + 10);
@@ -31,20 +34,48 @@ public class DynamicMatrix2D<E> {
                 matrix.get(i).addAll(0,tmp);
             }
         }*/
-
+        /*if (x == rows-1){
+            //System.out.println("bien");
+            matrix.add(x,new ArrayList<E>(cols));
+            for (int i=0;i<cols;i++){
+                matrix.get(x).add(i,null);  
+            }
+            rows++;
+        }*/
+        /*if (x == rows){
+            rows++;
+            matrix.add(x,new ArrayList<E>(cols));
+            for (int i=0;i<cols;i++){
+                matrix.get(x).add(i,null);  
+            }
+        }
+        if (y == cols){
+            System.out.println("h");
+            cols++;
+        }*/
         matrix.get(x).add(y,value);
     }
 
     public E get(int x, int y) {
+        //System.out.println("x:"+rows+"  y:"+cols);
+        /*if (x == rows - 1){
+            System.out.println("bien2");
+            matrix.add(rows,new ArrayList<E>(cols));
+            for (int i=0;i<cols;i++){
+                matrix.get(rows).add(i,null);  
+            }
+            rows++;
+        }*/
         return x >= matrix.size() || y >= matrix.get(x).size() ? null : matrix.get(x).get(y);
+        //return matrix.get(x).get(y);
     }
 
     public int getRowLength(){
-        return matrix.size();
+        return rows;
     }
 
     public int getColLength(){
-        return matrix.get(0).size();
+        return cols;
     }
 
     public String toString(){

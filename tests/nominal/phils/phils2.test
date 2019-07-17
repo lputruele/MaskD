@@ -4,7 +4,6 @@ Global fork0 : BOOL;
 Global fork1 : BOOL;
 
 
-
 Process OddPhil(forkL: BOOL, forkR:BOOL){
    
    s : STATE;
