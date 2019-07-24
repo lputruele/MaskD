@@ -1,15 +1,15 @@
 #script for replicating experimental evaluation results
 echo "----------------------------Memory Cell test----------------------------"
 echo "3 bits"
-time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell3.test ../tests/faulty/memoryCell/memoryCell3.test
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell.test ../tests/faulty/memoryCell/memoryCell3.test
 echo "5 bits"
-time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell5.test ../tests/faulty/memoryCell/memoryCell5.test
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell.test ../tests/faulty/memoryCell/memoryCell5.test
 echo "7 bits"
-time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell7.test ../tests/faulty/memoryCell/memoryCell7.test
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell.test ../tests/faulty/memoryCell/memoryCell7.test
 echo "9 bits"
-time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell9.test ../tests/faulty/memoryCell/memoryCell9.test
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell.test ../tests/faulty/memoryCell/memoryCell9.test
 echo "11 bits"
-time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell11.test ../tests/faulty/memoryCell/memoryCell11.test
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/memoryCell/memoryCell.test ../tests/faulty/memoryCell/memoryCell11.test
 
 echo "----------------------------N-Modular Redundancy test----------------------------"
 echo "3 modules "
@@ -50,6 +50,8 @@ echo "1 chunk(s), 10 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN1.test ../tests/faulty/brp/brpN1M10.test
 echo "1 chunk(s), 20 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN1.test ../tests/faulty/brp/brpN1M20.test
+echo "1 chunk(s), 40 retransmission(s)"
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN1.test ../tests/faulty/brp/brpN1M40.test
 echo "5 chunk(s), 1 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN5.test ../tests/faulty/brp/brpN5M1.test
 echo "5 chunk(s), 5 retransmission(s)"
@@ -58,6 +60,8 @@ echo "5 chunk(s), 10 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN5.test ../tests/faulty/brp/brpN5M10.test
 echo "5 chunk(s), 20 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN5.test ../tests/faulty/brp/brpN5M20.test
+echo "5 chunk(s), 40 retransmission(s)"
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN5.test ../tests/faulty/brp/brpN5M40.test
 echo "10 chunk(s), 1 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN10.test ../tests/faulty/brp/brpN10M1.test
 echo "10 chunk(s), 5 retransmission(s)"
@@ -66,3 +70,5 @@ echo "10 chunk(s), 10 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN10.test ../tests/faulty/brp/brpN10M10.test
 echo "10 chunk(s), 20 retransmission(s)"
 time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN10.test ../tests/faulty/brp/brpN10M20.test
+echo "10 chunk(s), 40 retransmission(s)"
+time java -jar $MASKD/maskD.jar -det ../tests/nominal/brp/brpN10.test ../tests/faulty/brp/brpN10M40.test

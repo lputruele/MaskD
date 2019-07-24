@@ -61,6 +61,15 @@ public class ExplicitCompositeModel {
 		return procDecls;
 	}
 
+	public int getNumNodes(){
+		return numNodes;
+	}
+
+	public int getNumEdges(){
+		return numEdges;
+	}
+
+
 	public void addNode(CompositeNode v) {
 		nodes.add(v);
 		succList.put(v, new TreeSet<CompositeNode>());
@@ -86,15 +95,27 @@ public class ExplicitCompositeModel {
 		if (!hasNode(from) || !hasNode(to))
 			return false;
 		Pair transition = new Pair(from,to);
-		if (actions.get(transition) == null)
+		if (actions.get(transition) == null){
+			//System.out.println("a");
 			return false;
+		}
+		
+
+		/*for (Action a_ : actions.get(transition)){
+			if (a.getLabel().equals(a_.getLabel())){
+				return true;
+			}
+		}
+		System.out.println(actions.get(transition));
+		
+		return false;*/
 		return actions.get(transition).contains(a);
 	}
 
 
 	public void addEdge(CompositeNode from, CompositeNode to, Action a) {
 		if (to != null){
-			if (a.isTau() && !a.getLabel().equals("&"))
+			if (a.isTau() && a.getLabel().charAt(0)!='&')
 				a.setLabel("&"+a.getLabel());
 			if (hasEdge(from, to, a))
 				return;

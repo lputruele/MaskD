@@ -65,4 +65,8 @@ public class Action {
 		return false;
 	}
 
+	public String toString(){
+		return label;
+	}
+
 }

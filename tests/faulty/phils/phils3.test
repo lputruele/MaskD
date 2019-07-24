@@ -32,7 +32,6 @@ Process EvenPhil(forkL: BOOL, forkR:BOOL){
    [eating] s == hungry && hasL && hasR -> s = eating; 
    [thinking] s == eating -> s = thinking, forkL=true, forkR=true, hasR=false, hasL=false;
    [getLeft] faulty s == hungry && !hasR && forkL && !hasL -> forkL = false, hasL=true;
-   //[getRight] faulty s == hungry && forkR && hasL && !hasR  -> forkR=false, hasR=true;
    
 
    
