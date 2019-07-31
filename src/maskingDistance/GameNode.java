@@ -100,6 +100,15 @@ public class GameNode implements Comparable{
 		return res;
 	}
 
+	public String toString2(){
+		String res;
+		if (this.isErrState())
+			res = "ERR_STATE";
+		else
+			res = "SPEC: "+", SYMBOL: "+(symbol.isFromSpec()?"S":(symbol.getLabel().equals("")?"#":"I"))+symbol.getLabel()+", IMP:"+", PLAYER: "+player;
+		return res;
+	}
+
 	public String toStringDot(){
 		String res;
 		if (this.isErrState())
@@ -119,16 +128,18 @@ public class GameNode implements Comparable{
 	public boolean equals(Object o){
 		if (o instanceof GameNode){
 			GameNode n = (GameNode)o;
-			if (this.isErrState()){
-				if (n.isErrState())
+			if (this.isErrState() && n.isErrState())
 					return true;
-				else
+			else{
+				if (this.isErrState() || n.isErrState())
 					return false;
 			}
-			if (n.isErrState()){
-				return false;
+				
+			if (specState == n.getSpecState() && impState == n.getImpState() && symbol.equals(n.getSymbol()) && player.equals(n.getPlayer())){
+				//System.out.println(this.hashCode()==n.hashCode());
+				return true;
 			}
-			return specState == n.getSpecState() && impState == n.getImpState() && symbol.equals(n.getSymbol()) && player.equals(n.getPlayer());
+			//System.out.println(this.hashCode()==n.hashCode());
 		}
 		return false;
 	}

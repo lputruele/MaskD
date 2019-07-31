@@ -57,10 +57,18 @@ public class Action {
 	}
 
 	@Override
+	public int hashCode(){
+	    return Objects.hash(label, isFaulty, isTau, isFromSpec);
+	}
+
+	@Override
 	public boolean equals(Object o){
 		if (o instanceof Action){
 			Action a = (Action)o;
-			return label.equals(a.getLabel()) && isFaulty.equals(a.isFaulty()) && isTau.equals(a.isTau()) && isFromSpec.equals(a.isFromSpec());
+			if (label.equals(a.getLabel()) && isFaulty.equals(a.isFaulty()) && isTau.equals(a.isTau()) && isFromSpec.equals(a.isFromSpec())){
+				//System.out.println(this.hashCode()==a.hashCode());
+				return true;
+			}
 		}
 		return false;
 	}

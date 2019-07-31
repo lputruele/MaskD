@@ -164,6 +164,7 @@ public class CompositeNode implements Comparable{
 						return false;
 				}
 			}
+			//System.out.println(this.hashCode()==n.hashCode());
 			return true;
 		}
 		return false;

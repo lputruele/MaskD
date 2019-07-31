@@ -6,8 +6,8 @@ import java.io.*;
 
 public class GameGraph{
 
-	private HashMap<GameNode, TreeSet<GameNode>> succList; // Successors adjacency list
-	private HashMap<GameNode, TreeSet<GameNode>> preList; // Predecessors adjacency list
+	private HashMap<GameNode, HashSet<GameNode>> succList; // Successors adjacency list
+	private HashMap<GameNode, HashSet<GameNode>> preList; // Predecessors adjacency list
 	private HashMap<Pair, LinkedList<Action>> actions; // actions for edges
 	private GameNode initial; // Initial state
 	private LinkedList<GameNode> nodes; // States
@@ -16,8 +16,8 @@ public class GameGraph{
 	private GameNode errState; // Special error state
 
 	public GameGraph() {
-		succList = new HashMap<GameNode, TreeSet<GameNode>>();
-		preList = new HashMap<GameNode, TreeSet<GameNode>>();
+		succList = new HashMap<GameNode, HashSet<GameNode>>();
+		preList = new HashMap<GameNode, HashSet<GameNode>>();
 		actions = new HashMap<Pair, LinkedList<Action>>();
 		numNodes = numEdges = 0;
 		nodes = new LinkedList<GameNode>();
@@ -53,8 +53,8 @@ public class GameGraph{
 
 	public void addNode(GameNode v) {
 		nodes.add(v);
-		succList.put(v, new TreeSet<GameNode>());
-		preList.put(v, new TreeSet<GameNode>());
+		succList.put(v, new HashSet<GameNode>());
+		preList.put(v, new HashSet<GameNode>());
 		numNodes += 1;
 	}
 
@@ -100,11 +100,11 @@ public class GameGraph{
 		return nodes;
 	}
 
-	public TreeSet<GameNode> getSuccessors(GameNode v){
+	public HashSet<GameNode> getSuccessors(GameNode v){
 		return succList.get(v);
 	}
 
-	public TreeSet<GameNode> getPredecessors(GameNode v){
+	public HashSet<GameNode> getPredecessors(GameNode v){
 		return preList.get(v);
 	}
 

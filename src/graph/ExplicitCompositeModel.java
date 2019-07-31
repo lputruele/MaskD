@@ -5,8 +5,8 @@ import faulty.*;
 import java.io.*;
 
 public class ExplicitCompositeModel {
-	private HashMap<CompositeNode, TreeSet<CompositeNode>> succList; // Succesors adjacency list
-	private HashMap<CompositeNode, TreeSet<CompositeNode>> preList; // Predecessors adjacency list
+	private HashMap<CompositeNode, HashSet<CompositeNode>> succList; // Succesors adjacency list
+	private HashMap<CompositeNode, HashSet<CompositeNode>> preList; // Predecessors adjacency list
 	private HashMap<Pair, LinkedList<Action>> actions; // Edge actions
 	private CompositeNode initial; // Initial State
 	private LinkedList<Var> sharedVars; // Global variables
@@ -22,8 +22,8 @@ public class ExplicitCompositeModel {
 		sharedVars = svs.getBoolVars();
 		sharedVars.addAll(svs.getEnumVars());
 		sharedVars.addAll(svs.getIntVars());
-		succList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
-		preList = new HashMap<CompositeNode, TreeSet<CompositeNode>>();
+		succList = new HashMap<CompositeNode, HashSet<CompositeNode>>();
+		preList = new HashMap<CompositeNode, HashSet<CompositeNode>>();
 		actions = new HashMap<Pair, LinkedList<Action>>();
 		numNodes = numEdges = 0;
 		nodes = new LinkedList<CompositeNode>();
@@ -72,8 +72,8 @@ public class ExplicitCompositeModel {
 
 	public void addNode(CompositeNode v) {
 		nodes.add(v);
-		succList.put(v, new TreeSet<CompositeNode>());
-		preList.put(v, new TreeSet<CompositeNode>());
+		succList.put(v, new HashSet<CompositeNode>());
+		preList.put(v, new HashSet<CompositeNode>());
 		numNodes += 1;
 	}
 
@@ -147,11 +147,11 @@ public class ExplicitCompositeModel {
 		return nodes;
 	}
 
-	public TreeSet<CompositeNode> getSuccessors(CompositeNode v){
+	public HashSet<CompositeNode> getSuccessors(CompositeNode v){
 		return succList.get(v);
 	}
 
-	public TreeSet<CompositeNode> getPredecessors(CompositeNode v){
+	public HashSet<CompositeNode> getPredecessors(CompositeNode v){
 		return preList.get(v);
 	}
 

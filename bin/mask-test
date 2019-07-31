@@ -37,9 +37,9 @@ time java -jar $MASKD/maskD.jar  -nb -l ../tests/nominal/phils/phils6.test ../te
 
 echo "----------------------------Byzantine Generals test----------------------------"
 echo "3 generals "
-time java -jar $MASKD/maskD.jar  ../tests/nominal/byzantine/byz3.test ../tests/faulty/byzantine/byz3.test 
+time java -jar $MASKD/maskD.jar  -nb ../tests/nominal/byzantine/byz3.test ../tests/faulty/byzantine/byz3.test 
 echo "4 generals"
-time java -jar $MASKD/maskD.jar  ../tests/nominal/byzantine/byz4.test ../tests/faulty/byzantine/byz4.test
+time java -jar $MASKD/maskD.jar  -nb ../tests/nominal/byzantine/byz4.test ../tests/faulty/byzantine/byz4.test
 
 echo "----------------------------Bounded Retransmission Protocol test----------------------------"
 echo "1 chunk(s), 1 retransmission(s)"
