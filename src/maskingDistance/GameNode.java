@@ -14,6 +14,7 @@ public class GameNode implements Comparable{
 	boolean visited; // Utility for graph traversal algorithms
 	int distanceValue; // Value of the game for this node
 	GameNode previousNodeInPath; // Previous Node in Shortest path to errState
+	boolean numbered; // True if marked with a temp mask distance
 
 	public GameNode(){
 		visited = false;
@@ -27,6 +28,7 @@ public class GameNode implements Comparable{
 		player = p;
 		visited = false;
 		distanceValue = Integer.MAX_VALUE;
+		numbered = false;
 	}
 
 	public CompositeNode getSpecState(){
@@ -77,6 +79,18 @@ public class GameNode implements Comparable{
 		previousNodeInPath = prev;
 	}
 
+	public boolean isVerifier(){
+		return player.equals("V");
+	}
+
+	public boolean isNumbered(){
+		return numbered;
+	}
+
+	public void setNumbered(boolean b){
+		numbered = b;
+	}
+
 	@Override
 	public int compareTo(Object u) {
 		if (u instanceof GameNode)
@@ -115,7 +129,7 @@ public class GameNode implements Comparable{
 			res = "ERR_STATE";
 		else{
 			String s = symbol.getLabel().replaceAll("&","TAU")+(symbol.isFromSpec()?"S":"I");
-			res = "SPEC"+specState.toStringDot()+"__"+s+"__"+"IMP"+impState.toStringDot()+"___"+player;
+			res = "SPEC·"+specState.toStringDot()+"_"+s+"_"+"IMP·"+impState.toStringDot()+"_"+player+"_VALUE"+distanceValue;
 		}
 		return res;
 	}

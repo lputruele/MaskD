@@ -115,24 +115,24 @@ public class CompositeNode implements Comparable{
 		String res = "";
 		for (Var v : model.getSharedVars()){
 			if (state.get(v.getName()) != null && state.get(v.getName()))
-				res += v.getName() + "_";
+				res += v.getName() + "·";
 			if (stateEnums.get(v.getName())!=null)
-				res += v.getName() + "" +stateEnums.get(v.getName())+ "_";
+				res += v.getName() + "" +stateEnums.get(v.getName())+ "·";
 			if (stateInts.get(v.getName())!=null)
-				res += v.getName() + "" +stateInts.get(v.getName())+ "_";
+				res += v.getName() + "" +stateInts.get(v.getName())+ "·";
 		}
 		for (int i=0; i < model.getProcDecls().size(); i++){
 			for (Var v : model.getProcs().get(i).getVarBool()){
 				if (state.get(model.getProcDecls().get(i)+v.getName())!=null && state.get(model.getProcDecls().get(i)+v.getName()))
-					res += model.getProcDecls().get(i)+v.getName() + "_";
+					res += model.getProcDecls().get(i)+v.getName() + "·";
 			}
 			for (Var v : model.getProcs().get(i).getVarEnum()){
 				if (v.hasEnumType() && stateEnums.get(model.getProcDecls().get(i)+v.getName())!=null)
-					res += model.getProcDecls().get(i)+v.getName()+ "" +stateEnums.get(model.getProcDecls().get(i)+v.getName()) + "_";
+					res += model.getProcDecls().get(i)+v.getName()+ "" +stateEnums.get(model.getProcDecls().get(i)+v.getName()) + "·";
 			}
 			for (Var v : model.getProcs().get(i).getVarInt()){
 				if (stateInts.get(model.getProcDecls().get(i)+v.getName())!=null)
-					res += model.getProcDecls().get(i)+v.getName()+ "" +stateInts.get(model.getProcDecls().get(i)+v.getName()) + "_";
+					res += model.getProcDecls().get(i)+v.getName()+ "" +stateInts.get(model.getProcDecls().get(i)+v.getName()) + "·";
 			}
 		}
 		return res;
