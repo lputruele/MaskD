@@ -30,8 +30,8 @@ public class MaskingDistance{
 		System.out.println("Saturating Models...");
 		spec.saturate();
 		imp.saturate();
-        System.out.println("Spec states: "+spec.getNumNodes());
-        System.out.println("Imp states: "+imp.getNumNodes());
+        //System.out.println("Spec states: "+spec.getNumNodes());
+        //System.out.println("Imp states: "+imp.getNumNodes());
 		//spec.createDot(false);
 		//imp.createDot(true);
 		System.out.println("Building Game Graph...");
@@ -181,7 +181,7 @@ public class MaskingDistance{
             	}
             }
         }
-        System.out.println("Game graph states: "+g.getNumNodes());
+        //System.out.println("Game graph states: "+g.getNumNodes());
         //printUnmatches();
 	}
 
@@ -347,16 +347,6 @@ public class MaskingDistance{
         g.getErrState().setNumbered(true);
         calculateTempDistance(g.getErrState());
 
-        /*for (GameNode n : g.getNodes()){
-            //System.out.println(n.getDistanceValue());
-            //System.out.println(n.getSymbol().isFaulty());
-            if (!n.getVisited()){
-                //System.out.println(n.toString());
-                //System.out.println(n.getDistanceValue());
-                calculateTempDistance(n);
-            }
-        }*/
-
         int minDistance = g.getInitial().getDistanceValue();        
         double res = Math.round((double)1/(minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);
         return res;
@@ -370,17 +360,10 @@ public class MaskingDistance{
         while (!q.isEmpty()) {
             GameNode v = q.getFirst();
             q.removeFirst();
-            /*if (v.equals(g.getInitial())){
-                continue;
-            }*/
             for (GameNode adj : g.getPredecessors(v)) {
                 change = false;
                 int addedCost;
                 if (adj.isVerifier()){
-                    /*if (v.getDistanceValue() > adj.getDistanceValue() - addedCost || !adj.isNumbered()){
-                        adj.setDistanceValue(v.getDistanceValue() + addedCost);
-                        adj.setNumbered(true);
-                    }*/
                     int m = maxD(adj);
                     addedCost =  (m==Integer.MAX_VALUE?0:(adj.getSymbol().isFaulty()?1:0));
                     if (adj.getDistanceValue() != m + addedCost){
@@ -389,10 +372,6 @@ public class MaskingDistance{
                     }
                 }
                 else{
-                    /*if (v.getDistanceValue() < adj.getDistanceValue() - addedCost || !adj.isNumbered()){
-                        adj.setDistanceValue(v.getDistanceValue() + addedCost);
-                        adj.setNumbered(true);
-                    }*/
                     int m = minD(adj);
                     addedCost =  (m==Integer.MAX_VALUE?0:(adj.getSymbol().isFaulty()?1:0));
                     if (adj.getDistanceValue() != m + addedCost){
@@ -401,12 +380,9 @@ public class MaskingDistance{
                     }
                 }
                 if (change){
-                //if (!adj.getVisited()){
                     adj.setVisited(true);
                     q.addLast(adj);
                 }
-
-                //System.out.println(adj.getSymbol().isFaulty());
             }
         }
     }
@@ -470,14 +446,14 @@ public class MaskingDistance{
     public double calculateDistanceBFS(){
         System.out.println("Calculating Distance...");
 
-        g.getInitial().setDistanceValue(0);
+        g.getErrState().setDistanceValue(1);
         
         LinkedList<GameNode> q = new LinkedList<GameNode>() ;
-        q.addFirst(g.getInitial());
+        q.addFirst(g.getErrState());
         while (!q.isEmpty()) {
             GameNode v = q.getFirst();
             q.removeFirst();
-            for (GameNode adj : g.getSuccessors(v)) {
+            for (GameNode adj : g.getPredecessors(v)) {
                 int w = adj.getSymbol().isFaulty()?1:0;
                 if (v.getDistanceValue() + w < adj.getDistanceValue()) {
                     adj.setDistanceValue(v.getDistanceValue() + w);
@@ -495,9 +471,9 @@ public class MaskingDistance{
             }
         }
 
-        int minDistance = g.getErrState().getDistanceValue();
+        int minDistance = g.getInitial().getDistanceValue();
         
-        double res= Math.round((double)1/(1+minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);
+        double res= Math.round((double)1/(minDistance) * Math.pow(10, 3)) / Math.pow(10, 3);
         return res;
     }
 

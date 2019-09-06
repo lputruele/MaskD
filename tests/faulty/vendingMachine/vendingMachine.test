@@ -9,6 +9,7 @@ Process Machine{
 		[a] s == select -> s = soda;
 		[a] s == select -> s = beer;
 		[getSoda] s == soda -> s = pay;
+		[fail] faulty s == soda -> s = beer;
 		[getBeer] s == beer -> s = pay;
 }
 
